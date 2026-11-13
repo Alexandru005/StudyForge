@@ -1,13 +1,328 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study Forge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Paleta Holst */
+  :root{
+    --p1:#17060a; /* background + cartonașe */
+    --p2:#6D1D32; /* butoane */
+    --p3:#8E2B44;
+    --p4:#B23C59;
+    --p5:#CC5671;
+    --p6:#E07A94; /* iconițe */
+    --p7:#F7D6DC;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--p1);color:var(--p7);font-family:Inter,system-ui,sans-serif}
+  a{color:var(--p6)}
+  a:hover{color:var(--p7)}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 32px}
+  h1,h2,h3,.brand{font-family:'Space Grotesk',sans-serif}
+
+  /* Butoane */
+  .btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 28px;border-radius:12px;
+       background:var(--p2);color:var(--p7);border:1px solid var(--p3);font-weight:600;font-size:16px;text-decoration:none;
+       transition:background .2s,transform .2s}
+  .btn:hover{background:var(--p3);color:var(--p7);transform:translateY(-1px)}
+  .btn:focus-visible{outline:3px solid var(--p6);outline-offset:3px}
+  .btn-sm{min-height:44px;padding:0 20px;border-radius:10px;font-size:15px;font-weight:500}
+
+  /* BARA DE SUS */
+  .topbar{position:sticky;top:0;z-index:100;
+          background:rgba(23,6,10,.82);
+          -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+          border-bottom:1px solid var(--p2);
+          box-shadow:0 8px 24px rgba(0,0,0,.35)}
+  .nav{min-height:72px;padding-top:12px;padding-bottom:12px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+  .logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--p7)}
+  .logo:hover{color:var(--p7)}
+  .logo-mark{width:40px;height:40px;border-radius:10px;background:var(--p2);border:1px solid var(--p3);display:flex;align-items:center;justify-content:center}
+  .brand{font-weight:700;font-size:22px;letter-spacing:-0.01em}
+  .links{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:15px}
+  .links a.nl{color:var(--p6);text-decoration:none;padding:10px 16px;border-radius:10px;transition:background .2s,color .2s}
+  .links a.nl:hover{color:var(--p7);background:var(--p2)}
+  .links a.nl:focus-visible{outline:3px solid var(--p6);outline-offset:2px}
+
+  /* ca ancorele să nu ajungă sub bara fixă */
+  section[id], #start{scroll-margin-top:88px}
+
+  /* HERO */
+  .hero{padding:72px 0 96px;display:flex;flex-wrap:wrap;gap:56px;align-items:center}
+  .hero-text{flex:1 1 480px;min-width:0}
+  .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;background:var(--p2);color:var(--p7);font-size:14px;font-weight:500}
+  .badge i{width:8px;height:8px;border-radius:50%;background:var(--p6);display:block}
+  h1{margin:24px 0 0;font-weight:700;font-size:68px;line-height:1.02;letter-spacing:-0.03em}
+  h1 span{color:var(--p6)}
+  .lead{margin:24px 0 0;font-size:19px;line-height:1.55;color:var(--p6);max-width:520px}
+  .hero-cta{margin-top:36px;display:flex;flex-wrap:wrap;gap:14px}
+
+  /* Cartonașe */
+  .card{background:var(--p1);border:1px solid var(--p3);border-radius:24px;padding:28px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+  .hero-card{flex:1 1 440px;min-width:0}
+  .progress{display:flex;flex-direction:column;gap:22px}
+  .prow{display:flex;justify-content:space-between;font-size:14px;color:var(--p7);margin-bottom:8px}
+  .prow b{font-weight:500;color:var(--p6)}
+  .track{height:8px;border-radius:8px;background:var(--p2)}
+  .fill{height:8px;border-radius:8px;background:var(--p5)}
+
+  /* FEATURES */
+  .features{position:relative;overflow:hidden;isolation:isolate;border-top:1px solid var(--p2);border-bottom:1px solid var(--p2)}
+  .features .wrap,.how.wrap{padding-top:96px;padding-bottom:96px}
+  .eyebrow{font-size:14px;font-weight:600;color:var(--p6);letter-spacing:.08em;text-transform:uppercase}
+  h2{margin:12px 0 0;font-weight:700;font-size:44px;letter-spacing:-0.02em;line-height:1.1}
+  .features h2{max-width:640px}
+  .grid{margin-top:48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+  /* Lumini difuze din spatele sticlei */
+  .glow{position:absolute;border-radius:50%;pointer-events:none;z-index:-1;aspect-ratio:1;animation:drift 16s ease-in-out infinite}
+  .features .g1{width:540px;left:-140px;top:90px;background:radial-gradient(circle,rgba(204,86,113,.55),transparent 65%)}
+  .features .g2{width:640px;right:-180px;bottom:-240px;background:radial-gradient(circle,rgba(142,43,68,.75),transparent 65%);animation-delay:-6s}
+  .features .g3{width:380px;left:42%;top:42%;background:radial-gradient(circle,rgba(224,122,148,.35),transparent 65%);animation-delay:-11s}
+  @keyframes drift{50%{transform:translate(30px,-24px) scale(1.08)}}
+
+  /* Card de sticlă cu efect 3D */
+  .feat{position:relative;background:transparent;border:0;box-shadow:none;border-radius:22px;padding:32px 28px;
+        transform-style:preserve-3d;
+        transform:perspective(1000px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(var(--lift,0px));
+        transition:transform .55s cubic-bezier(.2,.8,.2,1);will-change:transform}
+  .feat.is-tilting{transition:transform .12s ease-out}
+  .feat:hover{--lift:-8px}
+  .feat::before{content:"";position:absolute;inset:0;border-radius:inherit;
+        background:linear-gradient(150deg,rgba(247,214,220,.12) 0%,rgba(178,60,89,.14) 45%,rgba(23,6,10,.38) 100%);
+        border:1px solid rgba(247,214,220,.16);
+        -webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%);
+        box-shadow:0 24px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(247,214,220,.2);
+        transition:box-shadow .4s,border-color .4s}
+  .feat:hover::before{border-color:rgba(224,122,148,.4);
+        box-shadow:0 40px 80px rgba(0,0,0,.6),0 0 40px rgba(204,86,113,.25),inset 0 1px 0 rgba(247,214,220,.28)}
+  .feat::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+        background:radial-gradient(circle at var(--mx,50%) var(--my,0%),rgba(247,214,220,.22),transparent 55%);
+        opacity:0;transition:opacity .4s;transform:translateZ(1px)}
+  .feat:hover::after{opacity:1}
+  .feat > *{position:relative}
+  .feat .icon{transform:translateZ(60px);border:1px solid var(--p3);box-shadow:0 12px 28px rgba(0,0,0,.45)}
+  .feat h3{transform:translateZ(45px)}
+  .feat p{transform:translateZ(30px)}
+  .icon{width:48px;height:48px;border-radius:12px;background:var(--p2);display:flex;align-items:center;justify-content:center}
+  .feat h3{margin:20px 0 8px;font-size:22px}
+  .feat p{margin:0;color:var(--p6);line-height:1.55;font-size:15px}
+
+  /* HOW */
+  .how h2{margin:0}
+  .steps{margin-top:48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px}
+  .step{border-top:2px solid var(--p4);padding-top:20px}
+  .num{font-family:'Space Grotesk',sans-serif;font-size:15px;color:var(--p6);font-weight:700}
+  .step h3{margin:8px 0;font-size:24px}
+  .step p{margin:0;color:var(--p6);line-height:1.55}
+
+  /* CTA */
+  .cta-wrap{position:relative;isolation:isolate;padding-top:24px;padding-bottom:96px}
+  .glow-layer{position:absolute;inset:-60px 0 0;overflow:hidden;z-index:-1;pointer-events:none}
+  .cta-wrap .g4{width:min(460px,80vw);left:0;top:20px;background:radial-gradient(circle,rgba(204,86,113,.65),transparent 65%)}
+  .cta-wrap .g5{width:min(520px,85vw);right:0;bottom:20px;background:radial-gradient(circle,rgba(142,43,68,.8),transparent 65%);animation-delay:-8s}
+  .cta{position:relative;color:var(--p7);border-radius:28px;padding:64px 40px;text-align:center;
+       transform-style:preserve-3d;
+       transform:perspective(1200px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+       transition:transform .6s cubic-bezier(.2,.8,.2,1);will-change:transform}
+  .cta.is-tilting{transition:transform .12s ease-out}
+  .cta::before{content:"";position:absolute;inset:0;border-radius:inherit;
+       background:linear-gradient(135deg,rgba(224,122,148,.24) 0%,rgba(178,60,89,.16) 50%,rgba(23,6,10,.42) 100%);
+       border:1px solid rgba(247,214,220,.2);
+       -webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
+       box-shadow:0 40px 90px rgba(0,0,0,.55),inset 0 1px 0 rgba(247,214,220,.25)}
+  .cta::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+       background:radial-gradient(circle at var(--mx,50%) var(--my,0%),rgba(247,214,220,.2),transparent 50%);
+       opacity:0;transition:opacity .4s;transform:translateZ(1px)}
+  .cta:hover::after{opacity:1}
+  .cta > *{position:relative}
+  .cta h2{margin:0;transform:translateZ(70px)}
+  .cta p{margin:16px auto 0;font-size:18px;max-width:480px;line-height:1.5;transform:translateZ(45px)}
+  .cta .btn{margin-top:32px;padding:0 32px;transform:translateZ(60px);
+       background:linear-gradient(145deg,var(--p4),var(--p2));border-color:rgba(247,214,220,.25);
+       box-shadow:0 14px 30px rgba(0,0,0,.45)}
+  .cta .btn:hover{transform:translateZ(60px) translateY(-2px);background:linear-gradient(145deg,var(--p5),var(--p3))}
+
+  /* FOOTER */
+  footer{border-top:1px solid var(--p2)}
+  .foot{padding:32px;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;font-size:14px;color:var(--p6)}
+  .foot span.l{display:flex;gap:24px}
+  .foot a{color:var(--p6)}
+  .foot a:hover{color:var(--p7)}
+
+  @media (max-width:640px){
+    .wrap{padding:0 20px}
+    .nav{min-height:64px;gap:8px;padding-top:10px;padding-bottom:10px}
+    .brand{font-size:19px}
+    .logo-mark{width:36px;height:36px}
+    .links{gap:4px;font-size:14px;width:100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -10px}
+    .links a.nl{white-space:nowrap}
+    .links a.nl{padding:8px 10px}
+    h1{font-size:44px}
+    h2{font-size:32px}
+    .hero{padding:40px 0 64px;gap:40px}
+    .features .wrap,.how.wrap{padding-top:64px;padding-bottom:64px}
+    .cta{padding:48px 24px}
+    .cta-wrap{padding-top:16px;padding-bottom:64px}
+    .foot{padding:24px 20px}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .glow{animation:none}
+    .feat,.cta{transition:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- BARA DE SUS (icon + nume + linkuri) -->
+<header class="topbar">
+  <nav class="wrap nav" aria-label="Navigare principală">
+    <a class="logo" href="#top" aria-label="Study Forge – începutul paginii">
+      <div class="logo-mark">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F7D6DC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 3 4 4.5 4 8a4 4 0 0 1-8 0c0-1.5.6-2.4 1.5-3.5C10 8.5 11.5 6.5 12 3z"></path><path d="M5 21h14"></path></svg>
+      </div>
+      <span class="brand">Study Forge</span>
+    </a>
+    <div class="links">
+      <a class="nl" href="#functii">Funcționalități</a>
+      <a class="nl" href="#cum">Cum funcționează</a>
+      <a class="nl" href="flashcards.html">Flashcards</a>
+    </div>
+  </nav>
+</header>
+
+<!-- HERO -->
+<div id="top" class="wrap">
+  <section class="hero">
+    <div class="hero-text">
+      <div class="badge"><i></i>Platforma ta de studiu</div>
+      <h1>Forjează-ți <span>fiecare examen.</span></h1>
+      <p class="lead">Organizează materia, exersează activ și urmărește progresul într-un singur loc. Studiul devine o rutină, nu o corvoadă.</p>
+      <div class="hero-cta">
+        <a class="btn" href="#start">Începe gratuit</a>
+      </div>
+    </div>
+
+    
+  </section>
+</div>
+
+<!-- FEATURES -->
+<section id="functii" class="features">
+  <div class="glow g1" aria-hidden="true"></div>
+  <div class="glow g2" aria-hidden="true"></div>
+  <div class="glow g3" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="eyebrow">Funcționalități</div>
+    <h2>Tot ce ai nevoie ca să înveți mai bine.</h2>
+    <div class="grid">
+
+      <div class="card feat" data-tilt="10">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E07A94" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="14" height="14" rx="2"></rect><path d="M7 3h14v14"></path></svg>
+        </div>
+        <h3>Flashcard-uri</h3>
+        <p>[Descriere funcționalitate din documentul tău]</p>
+      </div>
+
+      <div class="card feat" data-tilt="10">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E07A94" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M8 2v4M16 2v4M3 10h18"></path></svg>
+        </div>
+        <h3>Planificator</h3>
+        <p>[Descriere funcționalitate din documentul tău]</p>
+      </div>
+
+      <div class="card feat" data-tilt="10">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E07A94" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18M6 16v-4M11 16V8M16 16v-6M21 16V5"></path></svg>
+        </div>
+        <h3>Progres</h3>
+        <p>[Descriere funcționalitate din documentul tău]</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section id="cum" class="how wrap">
+  <h2>Trei pași, de la haos la rutină.</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="num">01</div>
+      <h3>Adaugă materiile</h3>
+      <p>[Pas 1 – de completat]</p>
+    </div>
+    <div class="step">
+      <div class="num">02</div>
+      <h3>Exersează activ</h3>
+      <p>[Pas 2 – de completat]</p>
+    </div>
+    <div class="step">
+      <div class="num">03</div>
+      <h3>Urmărește progresul</h3>
+      <p>[Pas 3 – de completat]</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div id="start" class="wrap cta-wrap">
+  <div class="glow-layer" aria-hidden="true">
+    <div class="glow g4"></div>
+    <div class="glow g5"></div>
+  </div>
+  <div class="cta" data-tilt="6">
+    <h2>Gata să începi?</h2>
+    <p>Creează-ți contul și pornește prima sesiune de studiu.</p>
+    <a class="btn" href="#start">Creează cont</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap foot">
+    <span>© Study Forge</span>
+    <span class="l"><a href="#start">Termeni</a><a href="#start">Confidențialitate</a><a href="#start">Contact</a></span>
+  </div>
+</footer>
+
+<script>
+/* Înclinare 3D după poziția mouse-ului */
+(() => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.querySelectorAll('[data-tilt]').forEach(el => {
+    const max = parseFloat(el.dataset.tilt) || 10;
+    let raf = 0;
+    el.addEventListener('pointermove', e => {
+      if (e.pointerType !== 'mouse') return;
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      const y = (e.clientY - r.top) / r.height;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        el.classList.add('is-tilting');
+        el.style.setProperty('--ry', ((x - .5) * 2 * max).toFixed(2) + 'deg');
+        el.style.setProperty('--rx', ((.5 - y) * 2 * max).toFixed(2) + 'deg');
+        el.style.setProperty('--mx', (x * 100).toFixed(1) + '%');
+        el.style.setProperty('--my', (y * 100).toFixed(1) + '%');
+      });
+    });
+    el.addEventListener('pointerleave', () => {
+      cancelAnimationFrame(raf);
+      el.classList.remove('is-tilting');
+      el.style.setProperty('--rx', '0deg');
+      el.style.setProperty('--ry', '0deg');
+    });
+  });
+})();
+</script>
+
+</body>
 </html>
