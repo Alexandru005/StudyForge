@@ -1,16 +1,56 @@
-# React + Vite
+# Study Forge – frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite. Designul (paleta Holst, sticlă, bara de sus, cardurile 3D) vine din paginile statice
+`design-reference/index.html` și `design-reference/flashcards.html`, portate în React și legate la backend-ul Spring Boot.
 
-Currently, two official plugins are available:
+## Pornire
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+# 1. backend (portul 8080) – din rădăcina proiectului
+docker compose up        # sau rulezi BackendApplication din IntelliJ
 
-## React Compiler
+# 2. frontend
+cd frontend
+npm install
+npm run dev              # http://localhost:5173
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Vite trimite toate cererile `/api/*` către `http://localhost:8080` (proxy în `vite.config.js`), deci nu ai probleme de CORS.
+Alte setări (opțional) în `.env.example`: `VITE_PROXY_TARGET` (alt backend) sau `VITE_API_URL` (apel direct, fără proxy).
 
-## Expanding the ESLint configuration
+Pentru generare trebuie setat `GEMINI_API_KEY` în `.env`-ul backend-ului. Dacă lipsește, paginile arată un avertisment
+(din `GET /api/status`).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Pagini și endpoint-uri
+
+| Rută               | Ce face                                              | Backend                                   |
+|--------------------|------------------------------------------------------|-------------------------------------------|
+| `/`                | pagina principală                                    | –                                         |
+| `/plan`            | încarci programa (PDF) → plan pe săptămâni           | `POST /api/plans` (`file`, `startDate`)   |
+| `/plan/:id`        | un plan salvat (săptămâni, evaluări, sfaturi, PDF)   | `GET /api/plans/{id}`, `/pdf`             |
+| `/flashcards`      | plan salvat sau PDF → set de carduri                 | `POST /api/quizzes` (`file`, `week`, `count`), `GET /api/plans` |
+| `/flashcards/:id`  | un set salvat, de studiat                            | `GET /api/quizzes/{id}`, `/pdf`           |
+| `/biblioteca`      | toate planurile și seturile, filtru după plan        | `GET /api/library`, `GET /api/quizzes?planId=` |
+
+La „Din plan salvat”, frontend-ul descarcă PDF-ul planului (`/api/plans/{id}/pdf`) și îl retrimite la `POST /api/quizzes`,
+iar backend-ul îl recunoaște după metadate/hash și folosește conținutul săptămânii alese.
+
+## Structura
+
+```
+src/
+  api.js              clientul pentru backend (fetch, erori ProblemDetail -> mesaj)
+  App.jsx             rutele
+  router/             router minimal (History API), fără dependențe
+  pages/              Home, Plan, Flashcards, Library, NotFound
+  components/         Topbar, PlanView, PdfLinks, StatusBanner, iconițe
+  styles/             home.css, app.css (generate din designul static), pages.css (completări)
+  index.css           paleta + bara de sus
+```
+
+## Limitări față de mockup
+
+- Backend-ul returnează doar întrebare + răspuns: nu există topic, dificultate, explicație sau exemplu pe card.
+- Nu există notițe de curs, text lipit sau „generează încă 5”: `POST /api/quizzes` primește doar PDF, săptămână și număr de carduri.
+- „Știut / de repetat” nu are endpoint (câmpul `mastered` există în baza de date, dar nu poate fi modificat din API),
+  deci marcajele se păstrează în `localStorage`, per set.

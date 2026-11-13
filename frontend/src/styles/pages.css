@@ -1,0 +1,90 @@
+/* Completări pentru paginile Plan, Flashcards și Bibliotecă, în același stil (sticlă + paleta Holst). */
+
+/* câmpuri numerice / dată, la fel ca select și textarea */
+.page-app input[type='number'],
+.page-app input[type='date'] {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 14px;
+  font: 15px Inter, system-ui, sans-serif;
+  color: var(--p7);
+  background: rgba(23, 6, 10, 0.55);
+  border: 1px solid var(--glass-line);
+  border-radius: 10px;
+}
+.page-app input:focus-visible { outline: 3px solid var(--p6); outline-offset: 3px; }
+.page-app .drop:focus-within { outline: 3px solid var(--p6); outline-offset: 3px; }
+/* `.field label` (display:block) suprascria flex-ul zonei de încărcare */
+.page-app .field label.drop { display: flex; font-weight: 400; margin-bottom: 0; }
+.page-app .drop > span:last-of-type { overflow-wrap: anywhere; }
+
+/* butoane */
+.page-app a.btn,
+.page-app a.btn-ghost { text-decoration: none; }
+.page-app .btn-sm { min-height: 44px; padding: 0 18px; font-size: 15px; border-radius: 10px; }
+.page-app .pdf-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.page-app .layout > * { min-width: 0; }
+
+/* avertisment de la /api/status */
+.page-app .status-slot { margin-bottom: 28px; }
+.page-app .status-slot .warn { margin-top: 0; }
+
+/* text lung în carduri */
+.page-app .q,
+.page-app .answer { white-space: pre-line; overflow-wrap: anywhere; }
+
+/* ===== Plan ===== */
+.page-app .plan-summary { margin: 18px 0 0; font-size: 16px; line-height: 1.65; color: rgba(247, 214, 220, 0.92); max-width: 760px; }
+.page-app .plan-actions { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+.page-app .block { margin-top: 36px; }
+.page-app .block > h3 { margin: 0 0 14px; font-size: 22px; }
+
+.page-app .assess-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.page-app .assess { padding: 16px 18px; display: grid; gap: 10px; border-radius: 16px; }
+.page-app .assess-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.page-app .assess-name { font-weight: 600; }
+.page-app .assess-date { font-size: 14px; color: var(--p6); }
+.page-app .mini-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.page-app .mini-chip { padding: 3px 10px; border-radius: 999px; font-size: 13px; background: rgba(109, 29, 50, 0.6); border: 1px solid var(--glass-line); }
+
+.page-app .weeks { display: grid; gap: 16px; }
+.page-app .week { padding: 22px 24px; display: grid; gap: 14px; }
+.page-app .week.current { border-color: rgba(224, 122, 148, 0.55); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), 0 0 40px rgba(204, 86, 113, 0.22), inset 0 1px 0 rgba(247, 214, 220, 0.18); }
+.page-app .week-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.page-app .week-dates { font-size: 14px; color: var(--p6); }
+.page-app .week-dates .now { color: var(--p7); font-weight: 600; }
+.page-app .week h4 { margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px; line-height: 1.25; }
+.page-app .week-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.page-app .week ul,
+.page-app .tips { margin: 8px 0 0; padding-left: 20px; line-height: 1.6; font-size: 15px; color: rgba(247, 214, 220, 0.92); }
+.page-app .week li + li,
+.page-app .tips li + li { margin-top: 4px; }
+.page-app .tips { padding: 20px 24px 20px 44px; margin: 0; }
+.page-app .week-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ===== Bibliotecă ===== */
+.page-app .lib-section { padding-bottom: 56px; }
+.page-app .lib-section:last-child { padding-bottom: 96px; }
+.page-app .lib-head { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }
+.page-app .lib-head h2 { margin: 0; font-size: 30px; letter-spacing: -0.02em; line-height: 1.15; }
+.page-app .lib-head .count { margin-left: 8px; font-size: 16px; font-weight: 500; color: var(--p6); }
+.page-app .lib-tools { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.page-app .filter { min-width: 220px; }
+.page-app .lib-grid { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+.page-app .item { padding: 22px; display: flex; flex-direction: column; gap: 10px; }
+.page-app .item h3 { margin: 6px 0 0; font-size: 20px; line-height: 1.25; }
+.page-app .item-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.page-app .item-date { font-size: 13px; color: var(--p6); }
+.page-app .item-meta,
+.page-app .item-sub { margin: 0; font-size: 14px; color: var(--p6); line-height: 1.5; overflow-wrap: anywhere; }
+.page-app .item-actions { margin-top: auto; padding-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+.page-app .lib-section > .help,
+.page-app .lib-section > .err { margin-top: 16px; }
+.page-app .lib-section > .empty { margin-top: 20px; }
+
+@media (max-width: 640px) {
+  .page-app .lib-head h2 { font-size: 24px; }
+  .page-app .week { padding: 18px 18px; }
+  .page-app .filter { min-width: 0; width: 100%; }
+  .page-app .lib-tools { width: 100%; }
+}
