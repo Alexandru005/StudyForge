@@ -1,0 +1,66 @@
+package com.studyforge.backend.config;
+
+import java.time.Duration;
+import java.time.ZoneId;
+import java.util.List;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+/**
+ * Setarile aplicatiei, citite din application.yaml (prefix "studyforge").
+ */
+@ConfigurationProperties(prefix = "studyforge")
+public record AppProperties(
+        String zone,
+        Integer maxInputChars,
+        Cors cors,
+        Gemini gemini) {
+
+    public AppProperties {
+        if (zone == null || zone.isBlank()) {
+            zone = "Europe/Bucharest";
+        }
+        if (maxInputChars == null || maxInputChars <= 0) {
+            maxInputChars = 150_000;
+        }
+        if (cors == null) {
+            cors = new Cors(List.of("http://localhost:5173"));
+        }
+        if (gemini == null) {
+            gemini = new Gemini(null, null, null, null, null);
+        }
+    }
+
+    public ZoneId zoneId() {
+        return ZoneId.of(zone);
+    }
+
+    public record Cors(List<String> allowedOrigins) {
+        public Cors {
+            if (allowedOrigins == null) {
+                allowedOrigins = List.of();
+            }
+        }
+    }
+
+    public record Gemini(String apiKey, String model, String baseUrl, Duration timeout, Integer maxRetries) {
+        public Gemini {
+            if (model == null || model.isBlank()) {
+                model = "gemini-3.5-flash";
+            }
+            if (baseUrl == null || baseUrl.isBlank()) {
+                baseUrl = "https://generativelanguage.googleapis.com/v1beta";
+            }
+            if (timeout == null) {
+                timeout = Duration.ofSeconds(180);
+            }
+            if (maxRetries == null || maxRetries < 0) {
+                maxRetries = 2;
+            }
+        }
+
+        public boolean isConfigured() {
+            return apiKey != null && !apiKey.isBlank();
+        }
+    }
+}
