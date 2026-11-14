@@ -60,6 +60,12 @@ public final class GeminiSchemas {
                 List.of("hint"));
     }
 
+    public static Map<String, Object> joke() {
+        return object(
+                props("joke", string("Gluma, maximum 2 propozitii, despre materia si situatia studentului")),
+                List.of("joke"));
+    }
+
     // ---- helpers ----
 
     private static Map<String, Object> props(Object... keyValues) {

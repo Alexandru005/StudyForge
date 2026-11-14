@@ -7,6 +7,8 @@ import './styles/pages.css'
 import './styles/auth.css'
 import './styles/progress.css'
 import './styles/friends.css'
+import './styles/extras.css'
+import './styles/accent.css' // ultimul: culoarea verde de accent suprascrie stilurile de bază
 import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(

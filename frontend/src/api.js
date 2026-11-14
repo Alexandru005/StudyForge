@@ -18,6 +18,7 @@
  *   POST /api/flashcards/{id}/hint  { previousHint? } -> { hint }
  *   GET  /api/progress        -> { data: { v, subjects, days } | null, updatedAt }
  *   PUT  /api/progress        { v, subjects, days } -> { data, updatedAt }   (salvează progresul complet)
+ *   POST /api/jokes          { previousJoke? } -> { joke, subject, planId }   (glumă din planul tău)
  *   --- prieteni (vezi backend/FRIENDS_API.md) ---
  *   GET    /api/friends/search?email=        -> { user, relation, requestId }
  *   POST   /api/friends/requests  { email }  -> { relation: "REQUEST_SENT"|"FRIENDS", request }
@@ -213,6 +214,9 @@ export const getProgress = () => json('/api/progress')
  * totalurile pe zile pentru clasament. keepalive: cererea pleacă și dacă pagina se închide.
  */
 export const saveProgress = (data, { keepalive = false } = {}) => sendJson('PUT', '/api/progress', data, { keepalive })
+
+/** O glumă scurtă generată de AI din planul tău de studiu. previousJoke = cea de dinainte, pentru „Altă glumă”. */
+export const getJoke = (previousJoke) => postJson('/api/jokes', previousJoke ? { previousJoke } : {})
 
 // ------------------------------------------------------------------ prieteni
 

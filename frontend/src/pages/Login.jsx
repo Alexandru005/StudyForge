@@ -79,7 +79,7 @@ export default function Login() {
           </button>
 
           <p className="auth-switch">
-            Nu ai cont? <Link to={'/register' + location.search}>Register</Link> ·{' '}
+            Nu ai cont? <Link to={'/register' + location.search}>Sign in</Link> ·{' '}
             <Link className="muted" to={'/cont' + location.search}>
               ‹ Înapoi
             </Link>

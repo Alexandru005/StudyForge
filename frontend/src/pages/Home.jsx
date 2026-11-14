@@ -19,6 +19,8 @@ const ICON = {
 const FEATURES = [
   {
     title: 'Flashcard-uri',
+    text: 'Carduri de întrebări generate cu AI din săptămâna de plan la care ești, ca să repeți exact ce urmează.',
+    points: ['Marchezi ce știi și ce mai ai de repetat', 'Indiciu de la mascotă când te blochezi', 'Descarci setul ca PDF'],
     icon: (
       <svg {...ICON}>
         <rect x="3" y="5" width="14" height="14" rx="2" />
@@ -28,6 +30,8 @@ const FEATURES = [
   },
   {
     title: 'Planificator',
+    text: 'Încarci programa materiei (PDF) și primești un plan pe săptămâni, cu teme, sarcini și datele evaluărilor.',
+    points: ['Pornește din ziua pe care o alegi', 'Testele și examenele marcate în calendar', 'Planul se salvează în bibliotecă'],
     icon: (
       <svg {...ICON}>
         <rect x="3" y="4" width="18" height="17" rx="2" />
@@ -37,6 +41,8 @@ const FEATURES = [
   },
   {
     title: 'Progres',
+    text: 'Vezi cât ai studiat la fiecare materie, ce scor ai la flashcard-uri și cum ai evoluat de la o săptămână la alta.',
+    points: ['Grafice pe zile și pe săptămâni', 'Mascota se bucură când îți merge bine', 'Comparație cu săptămâna trecută'],
     icon: (
       <svg {...ICON}>
         <path d="M3 20h18M6 16v-4M11 16V8M16 16v-6M21 16V5" />
@@ -46,9 +52,24 @@ const FEATURES = [
 ]
 
 const STEPS = [
-  { n: '01', title: 'Adaugă materiile' },
-  { n: '02', title: 'Exersează activ' },
-  { n: '03', title: 'Urmărește progresul' },
+  {
+    n: '01',
+    title: 'Adaugă materiile',
+    text: 'Încarcă programa fiecărei materii în format PDF. În câteva secunde primești un plan de studiu împărțit pe săptămâni, până la examen.',
+    meta: '~1 minut',
+  },
+  {
+    n: '02',
+    title: 'Exersează activ',
+    text: 'Alege săptămâna la care ești și generează flashcard-uri. Răspunde, întoarce cardul și marchează ce știi, ca să repeți doar ce mai trebuie.',
+    meta: '15 minute pe zi',
+  },
+  {
+    n: '03',
+    title: 'Urmărește progresul',
+    text: 'Pe pagina Progres vezi timpul petrecut și scorul la fiecare materie. Mascota îți arată dintr-o privire cum stai.',
+    meta: 'în fiecare săptămână',
+  },
 ]
 
 /** Container care se înclină 3D după mouse. */
@@ -107,7 +128,12 @@ export default function Home() {
               <Tilt key={f.title} max={10} className="card feat">
                 <div className="icon">{f.icon}</div>
                 <h3>{f.title}</h3>
-                <p>[Descriere funcționalitate din documentul tău]</p>
+                <p>{f.text}</p>
+                <ul className="feat-list">
+                  {f.points.map((pt) => (
+                    <li key={pt}>{pt}</li>
+                  ))}
+                </ul>
               </Tilt>
             ))}
           </div>
@@ -118,11 +144,12 @@ export default function Home() {
       <section id="cum" className="how wrap">
         <h2>Trei pași, de la haos la rutină.</h2>
         <div className="steps">
-          {STEPS.map((s, i) => (
+          {STEPS.map((s) => (
             <div className="step" key={s.n}>
               <div className="num">{s.n}</div>
               <h3>{s.title}</h3>
-              <p>[Pas {i + 1} – de completat]</p>
+              <p>{s.text}</p>
+              <span className="meta">{s.meta}</span>
             </div>
           ))}
         </div>

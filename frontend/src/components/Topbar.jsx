@@ -7,7 +7,7 @@ import { useRouter } from '../router/context.js'
 import { useToast } from '../toast/context.js'
 import { IconChevron, IconLogout } from './icons.jsx'
 
-// Înainte de conectare: secțiunile paginii principale. După conectare: paginile aplicației.
+// Înainte de conectare: secțiunile paginii principale + paginile aplicației. După conectare: doar paginile aplicației.
 const GUEST_LINKS = [
   { to: '/#functii', label: 'Funcționalități' },
   { to: '/#cum', label: 'Cum funcționează' },
@@ -25,7 +25,8 @@ export default function Topbar() {
   const { location } = useRouter()
   const { user } = useAuth()
   const onAuthPage = AUTH_PAGES.includes(location.pathname)
-  const links = onAuthPage ? [] : user ? USER_LINKS : GUEST_LINKS
+  // vizitatorii văd și paginile aplicației (te trimit la Log in); după conectare dispar secțiunile paginii principale
+  const links = onAuthPage ? [] : user ? USER_LINKS : [...GUEST_LINKS, ...USER_LINKS]
   const isActive = (to) =>
     !to.startsWith('/#') && (location.pathname === to || location.pathname.startsWith(to + '/'))
 

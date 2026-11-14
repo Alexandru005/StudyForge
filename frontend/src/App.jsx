@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { AuthProvider } from './auth/AuthProvider.jsx'
 import { useAuth } from './auth/context.js'
 import Topbar from './components/Topbar.jsx'
+import Extras from './extras/Extras.jsx'
 import Flashcards from './pages/Flashcards.jsx'
 import Friends from './pages/Friends.jsx'
 import Home from './pages/Home.jsx'
@@ -32,7 +33,9 @@ import { ToastProvider } from './toast/ToastProvider.jsx'
  *   /progres           timp activ, scor și evoluție pe materie (date locale, per cont)
  *   /prieteni          prieteni după email + clasament săptămânal cu like / dislike   /api/friends/**
  *
- * Progresul local (pe zile) se trimite la server de <ProgressSync />: PUT /api/progress/days
+ * Progresul se salvează și pe server de <ProgressSync />: GET / PUT /api/progress
+ * Pe paginile aplicației apar două butoane plutitoare (<Extras />): glumă din materie (POST /api/jokes)
+ * și jocul Flappy Forge.
  */
 
 /** Trimite la altă adresă (fără să rămână în istoric). */
@@ -87,6 +90,7 @@ export default function App() {
           <ProgressSync />
           <Topbar />
           <Routes />
+          <Extras />
         </AuthProvider>
       </ToastProvider>
     </Router>

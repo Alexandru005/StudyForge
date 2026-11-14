@@ -6,7 +6,7 @@ import { useRouter } from '../router/context.js'
 
 const PERKS = ['Plan de studiu pe săptămâni, din PDF-ul tău', 'Flashcards generate cu AI', 'Bibliotecă cu tot ce ai salvat']
 
-/** /cont: alegi între Log in și Register. */
+/** /cont: alegi între Log in și Sign in (cont nou). */
 export default function Welcome() {
   usePageTitle('Intră în cont')
   const { location } = useRouter()
@@ -52,7 +52,7 @@ export default function Welcome() {
                   <IconUserPlus />
                 </span>
                 <span className="choice-text">
-                  <b>Register</b>
+                  <b>Sign in</b>
                   <span>Ești nou aici? Creează un cont.</span>
                 </span>
                 <IconArrow />

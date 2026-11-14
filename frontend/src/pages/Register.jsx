@@ -24,7 +24,7 @@ function check({ username, email, password, password2, gender }) {
 
 /** /register: POST /api/auth/register (cu genul ales), apoi direct la /plan. */
 export default function Register() {
-  usePageTitle('Register')
+  usePageTitle('Sign in')
   const { register } = useAuth()
   const { location, navigate } = useRouter()
   const toast = useToast()
@@ -59,7 +59,7 @@ export default function Register() {
       <main className="wrap auth-main">
         <form className="register-grid" onSubmit={submit} noValidate>
           <div>
-            <div className="eyebrow">Register</div>
+            <div className="eyebrow">Sign in</div>
             <h1 className="auth-title-lg">
               Cine <span>ești tu?</span>
             </h1>
