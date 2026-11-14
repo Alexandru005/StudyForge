@@ -42,8 +42,8 @@ export const IconSaved = () => (
   </svg>
 )
 
-export const IconCheck = () => (
-  <svg width="26" height="26" {...base} strokeWidth="3">
+export const IconCheck = ({ size = 26 }) => (
+  <svg width={size} height={size} {...base} strokeWidth="3">
     <path d="M5 12.5l4.5 4.5L19 7.5" />
   </svg>
 )
@@ -91,5 +91,37 @@ export const IconDownload = () => (
   <svg width="16" height="16" {...base} strokeWidth="2">
     <path d="M12 4v12M7 11l5 5 5-5" />
     <path d="M4 20h16" />
+  </svg>
+)
+
+export const IconArrow = () => (
+  <svg width="20" height="20" {...base} strokeWidth="2">
+    <path d="M5 12h14M13 6l6 6-6 6" />
+  </svg>
+)
+
+export const IconLogin = () => (
+  <svg width="24" height="24" {...base} strokeWidth="2">
+    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" />
+  </svg>
+)
+
+export const IconUserPlus = () => (
+  <svg width="24" height="24" {...base} strokeWidth="2">
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M19 8v6M22 11h-6" />
+  </svg>
+)
+
+export const IconLogout = () => (
+  <svg width="18" height="18" {...base} strokeWidth="2">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+  </svg>
+)
+
+export const IconChevron = () => (
+  <svg width="14" height="14" {...base} strokeWidth="2.5">
+    <path d="M6 9l6 6 6-6" />
   </svg>
 )

@@ -4,6 +4,7 @@ import './index.css'
 import './styles/home.css'
 import './styles/app.css'
 import './styles/pages.css'
+import './styles/auth.css'
 import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(

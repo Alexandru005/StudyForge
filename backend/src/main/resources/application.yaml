@@ -42,3 +42,7 @@ studyforge:
     base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com/v1beta}
     timeout: 180s
     max-retries: 2
+  jwt:
+    # Cheie lunga si aleatorie (minim 32 de caractere). Pune-o in .env ca JWT_SECRET.
+    secret: ${JWT_SECRET:}
+    expiration: ${JWT_EXPIRATION:7d}

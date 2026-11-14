@@ -20,6 +20,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.studyforge.backend.ai.GeminiClient;
+import com.studyforge.backend.auth.AppUser;
+import com.studyforge.backend.auth.AppUserRepository;
 import com.studyforge.backend.ai.GeminiSchemas;
 import com.studyforge.backend.ai.Prompts;
 import com.studyforge.backend.common.ApiException;
@@ -47,18 +49,20 @@ public class PlanService {
     private final PlanPdfRenderer renderer;
     private final LearningPlanRepository plans;
     private final StoredPdfRepository pdfs;
+    private final AppUserRepository users;
     private final JsonSupport json;
     private final AppProperties properties;
     private final TransactionTemplate tx;
 
     public PlanService(PdfTextExtractor extractor, GeminiClient gemini, PlanPdfRenderer renderer,
-            LearningPlanRepository plans, StoredPdfRepository pdfs, JsonSupport json, AppProperties properties,
-            PlatformTransactionManager transactionManager) {
+            LearningPlanRepository plans, StoredPdfRepository pdfs, AppUserRepository users, JsonSupport json,
+            AppProperties properties, PlatformTransactionManager transactionManager) {
         this.extractor = extractor;
         this.gemini = gemini;
         this.renderer = renderer;
         this.plans = plans;
         this.pdfs = pdfs;
+        this.users = users;
         this.json = json;
         this.properties = properties;
         this.tx = new TransactionTemplate(transactionManager);
@@ -67,8 +71,9 @@ public class PlanService {
     /**
      * @param file           PDF-ul cu programa + evaluarile
      * @param requestedStart data de inceput (optional); se rotunjeste la lunea saptamanii respective
+     * @param userId         utilizatorul autentificat (proprietarul planului)
      */
-    public PlanDtos.PlanDetails create(MultipartFile file, LocalDate requestedStart) {
+    public PlanDtos.PlanDetails create(MultipartFile file, LocalDate requestedStart, UUID userId) {
         byte[] bytes = FileSupport.readPdf(file);
         PdfTextExtractor.Extracted extracted = extractor.extract(bytes);
         if (extracted.docType() != null) {
@@ -105,6 +110,7 @@ public class PlanService {
         plan.attachPdf(stored);
 
         tx.executeWithoutResult(status -> {
+            plan.assignOwner(ownerReference(users, userId));
             pdfs.save(stored);
             plans.save(plan);
         });
@@ -114,20 +120,20 @@ public class PlanService {
     }
 
     @Transactional(readOnly = true)
-    public List<PlanDtos.PlanSummary> list() {
-        return plans.findAllByOrderByCreatedAtDesc().stream().map(PlanDtos.PlanSummary::of).toList();
+    public List<PlanDtos.PlanSummary> list(UUID userId) {
+        return plans.findAllByOwner(userId).stream().map(PlanDtos.PlanSummary::of).toList();
     }
 
     @Transactional(readOnly = true)
-    public PlanDtos.PlanDetails get(UUID id) {
-        LearningPlan plan = find(id);
+    public PlanDtos.PlanDetails get(UUID id, UUID userId) {
+        LearningPlan plan = find(id, userId);
         PlanContent content = plan.getContentJson() != null ? json.read(plan.getContentJson(), PlanContent.class) : null;
         return new PlanDtos.PlanDetails(PlanDtos.PlanSummary.of(plan), content);
     }
 
     @Transactional(readOnly = true)
-    public PdfFile pdf(UUID id) {
-        LearningPlan plan = find(id);
+    public PdfFile pdf(UUID id, UUID userId) {
+        LearningPlan plan = find(id, userId);
         if (plan.getPdf() == null) {
             throw ApiException.notFound("Planul nu are un PDF salvat.");
         }
@@ -136,8 +142,18 @@ public class PlanService {
         return new PdfFile(stored.getFileName(), stored.getContent());
     }
 
-    private LearningPlan find(UUID id) {
-        return plans.findById(id).orElseThrow(() -> ApiException.notFound("Planul nu a fost găsit."));
+    /** Un plan al altui utilizator se comporta ca unul inexistent (404). */
+    private LearningPlan find(UUID id, UUID userId) {
+        return plans.findByIdAndOwner(id, userId)
+                .orElseThrow(() -> ApiException.notFound("Planul nu a fost găsit."));
+    }
+
+    /** Referinta catre utilizator (fara SELECT complet); 401 daca intre timp contul a fost sters. */
+    public static AppUser ownerReference(AppUserRepository users, UUID userId) {
+        if (!users.existsById(userId)) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "Contul nu mai există. Autentifică-te din nou.");
+        }
+        return users.getReferenceById(userId);
     }
 
     /**

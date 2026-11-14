@@ -49,6 +49,33 @@ section[id], #start { scroll-margin-top: 88px; }
 .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--p7); }
 .logo:hover { color: var(--p7); }
 .logo-mark { width: 40px; height: 40px; border-radius: 10px; background: var(--p2); border: 1px solid var(--p3); display: flex; align-items: center; justify-content: center; }
+.logo-img { width: 52px; height: 52px; object-fit: contain; display: block; }
+.nav-right { display: flex; align-items: center; gap: 8px; min-width: 0; }
+
+/* Cine e conectat (poza de profil după gen + nume) și meniul cu Log out */
+.user-menu { position: relative; margin-left: 8px; flex: none; }
+.user-chip {
+  display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px 14px 4px 4px; border-radius: 999px; cursor: pointer;
+  background: var(--p2); border: 1px solid var(--p3); color: var(--p7); font: 500 15px Inter, system-ui, sans-serif;
+  transition: background 0.2s, border-color 0.2s;
+}
+.user-chip:hover { background: var(--p3); }
+.user-chip:focus-visible { outline: 3px solid var(--p6); outline-offset: 2px; }
+.user-chip img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; display: block; }
+.user-chip .user-name { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-pop {
+  position: absolute; right: 0; top: calc(100% + 10px); width: 260px; padding: 12px; border-radius: 16px; z-index: 120;
+  background: #2a0d15; border: 1px solid var(--glass-line); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.user-pop-head { padding: 8px 12px; font-size: 13px; color: var(--p6); display: flex; flex-direction: column; gap: 2px; }
+.user-pop-head b { color: var(--p7); font-size: 15px; overflow-wrap: anywhere; }
+.user-pop .logout {
+  display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; cursor: pointer;
+  font: 600 15px Inter, system-ui, sans-serif; color: var(--bad); background: var(--bad-bg); border: 1px solid rgba(255, 138, 155, 0.35);
+}
+.user-pop .logout:hover { background: rgba(255, 138, 155, 0.22); }
+.user-pop .logout:focus-visible { outline: 3px solid var(--p6); outline-offset: 2px; }
 .brand { font-weight: 700; font-size: 22px; letter-spacing: -0.01em; }
 .links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 15px; }
 .links a.nl { color: var(--p6); text-decoration: none; padding: 10px 16px; border-radius: 10px; transition: background 0.2s, color 0.2s; }
@@ -73,6 +100,11 @@ section[id], #start { scroll-margin-top: 88px; }
   .nav { min-height: 64px; gap: 8px; padding-top: 10px; padding-bottom: 10px; }
   .brand { font-size: 19px; }
   .logo-mark { width: 36px; height: 36px; }
+  .logo-img { width: 44px; height: 44px; }
+  .nav-right { width: 100%; }
+  .nav-right .links { width: auto; flex: 1; min-width: 0; margin: 0; }
+  .user-chip .user-name { max-width: 110px; }
+  .user-menu { margin-left: auto; }
   .links { gap: 4px; font-size: 14px; width: 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -10px; }
   .links a.nl { white-space: nowrap; padding: 8px 10px; }
 }

@@ -3,6 +3,7 @@ package com.studyforge.backend.plan;
 import java.time.Instant;
 import java.time.LocalDate;
 
+import com.studyforge.backend.auth.AppUser;
 import com.studyforge.backend.common.BaseEntity;
 import com.studyforge.backend.common.FileSupport;
 import com.studyforge.backend.storage.StoredPdf;
@@ -44,6 +45,11 @@ public class LearningPlan extends BaseEntity {
     @JoinColumn(name = "pdf_id")
     private StoredPdf pdf;
 
+    /** Utilizatorul caruia ii apartine planul. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private AppUser owner;
+
     @Column(name = "created_at", columnDefinition = "timestamptz")
     private Instant createdAt;
 
@@ -64,6 +70,14 @@ public class LearningPlan extends BaseEntity {
 
     public void attachPdf(StoredPdf pdf) {
         this.pdf = pdf;
+    }
+
+    public void assignOwner(AppUser owner) {
+        this.owner = owner;
+    }
+
+    public AppUser getOwner() {
+        return owner;
     }
 
     public String getTitle() {

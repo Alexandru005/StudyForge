@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.studyforge.backend.auth.AppUser;
 import com.studyforge.backend.common.BaseEntity;
 import com.studyforge.backend.common.FileSupport;
 import com.studyforge.backend.plan.LearningPlan;
@@ -45,6 +46,11 @@ public class Quiz extends BaseEntity {
     @JoinColumn(name = "pdf_id")
     private StoredPdf pdf;
 
+    /** Utilizatorul caruia ii apartine setul. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private AppUser owner;
+
     @Column(name = "created_at", columnDefinition = "timestamptz")
     private Instant createdAt;
 
@@ -55,7 +61,9 @@ public class Quiz extends BaseEntity {
     protected Quiz() {
     }
 
-    public Quiz(LearningPlan learningPlan, String learningStage, Integer weekNumber, String sourceFileName) {
+    public Quiz(AppUser owner, LearningPlan learningPlan, String learningStage, Integer weekNumber,
+            String sourceFileName) {
+        this.owner = owner;
         this.learningPlan = learningPlan;
         this.learningStage = FileSupport.truncate(learningStage, 255);
         this.weekNumber = weekNumber;
@@ -69,6 +77,10 @@ public class Quiz extends BaseEntity {
 
     public void attachPdf(StoredPdf pdf) {
         this.pdf = pdf;
+    }
+
+    public AppUser getOwner() {
+        return owner;
     }
 
     public LearningPlan getLearningPlan() {

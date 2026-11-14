@@ -14,7 +14,8 @@ public record AppProperties(
         String zone,
         Integer maxInputChars,
         Cors cors,
-        Gemini gemini) {
+        Gemini gemini,
+        Jwt jwt) {
 
     public AppProperties {
         if (zone == null || zone.isBlank()) {
@@ -28,6 +29,9 @@ public record AppProperties(
         }
         if (gemini == null) {
             gemini = new Gemini(null, null, null, null, null);
+        }
+        if (jwt == null) {
+            jwt = new Jwt(null, null);
         }
     }
 
@@ -61,6 +65,23 @@ public record AppProperties(
 
         public boolean isConfigured() {
             return apiKey != null && !apiKey.isBlank();
+        }
+    }
+
+    /**
+     * @param secret     cheia secreta pentru semnarea token-urilor (JWT_SECRET). Daca lipseste, se genereaza
+     *                   una aleatorie la pornire si utilizatorii trebuie sa se autentifice din nou dupa restart.
+     * @param expiration cat timp e valid un token (implicit 7 zile)
+     */
+    public record Jwt(String secret, Duration expiration) {
+        public Jwt {
+            if (expiration == null || expiration.isNegative() || expiration.isZero()) {
+                expiration = Duration.ofDays(7);
+            }
+        }
+
+        public boolean hasSecret() {
+            return secret != null && !secret.isBlank();
         }
     }
 }

@@ -20,6 +20,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.studyforge.backend.ai.GeminiClient;
+import com.studyforge.backend.auth.AppUserRepository;
 import com.studyforge.backend.ai.GeminiSchemas;
 import com.studyforge.backend.ai.Prompts;
 import com.studyforge.backend.common.ApiException;
@@ -32,6 +33,7 @@ import com.studyforge.backend.pdf.PdfTextExtractor;
 import com.studyforge.backend.plan.LearningPlan;
 import com.studyforge.backend.plan.LearningPlanRepository;
 import com.studyforge.backend.plan.PlanContent;
+import com.studyforge.backend.plan.PlanService;
 import com.studyforge.backend.storage.PdfFile;
 import com.studyforge.backend.storage.StoredPdf;
 import com.studyforge.backend.storage.StoredPdfRepository;
@@ -55,19 +57,21 @@ public class QuizService {
     private final LearningPlanRepository plans;
     private final QuizRepository quizzes;
     private final StoredPdfRepository pdfs;
+    private final AppUserRepository users;
     private final JsonSupport json;
     private final AppProperties properties;
     private final TransactionTemplate tx;
 
     public QuizService(PdfTextExtractor extractor, GeminiClient gemini, FlashcardPdfRenderer renderer,
-            LearningPlanRepository plans, QuizRepository quizzes, StoredPdfRepository pdfs, JsonSupport json,
-            AppProperties properties, PlatformTransactionManager transactionManager) {
+            LearningPlanRepository plans, QuizRepository quizzes, StoredPdfRepository pdfs, AppUserRepository users,
+            JsonSupport json, AppProperties properties, PlatformTransactionManager transactionManager) {
         this.extractor = extractor;
         this.gemini = gemini;
         this.renderer = renderer;
         this.plans = plans;
         this.quizzes = quizzes;
         this.pdfs = pdfs;
+        this.users = users;
         this.json = json;
         this.properties = properties;
         this.tx = new TransactionTemplate(transactionManager);
@@ -77,8 +81,9 @@ public class QuizService {
      * @param file  PDF-ul planului (cel generat pe pagina 2)
      * @param week  saptamana in care se afla utilizatorul (1, 2, ...)
      * @param count cate flashcard-uri (implicit 15)
+     * @param userId utilizatorul autentificat (proprietarul setului)
      */
-    public QuizDtos.QuizDetails create(MultipartFile file, Integer week, Integer count) {
+    public QuizDtos.QuizDetails create(MultipartFile file, Integer week, Integer count, UUID userId) {
         if (week == null || week < 1) {
             throw ApiException.badRequest("Alege săptămâna în care ești (un număr de la 1 în sus).");
         }
@@ -95,7 +100,7 @@ public class QuizService {
                     "Acesta este un PDF cu flashcard-uri. Încarcă PDF-ul cu planul de învățare.");
         }
 
-        LearningPlan plan = resolvePlan(extracted.planId(), FileSupport.sha256(bytes)).orElse(null);
+        LearningPlan plan = resolvePlan(extracted.planId(), FileSupport.sha256(bytes), userId).orElse(null);
         PlanContent planContent = plan != null && plan.getContentJson() != null
                 ? json.read(plan.getContentJson(), PlanContent.class)
                 : null;
@@ -155,7 +160,7 @@ public class QuizService {
 
         Quiz quiz = tx.execute(status -> {
             LearningPlan planRef = planId != null ? plans.getReferenceById(planId) : null;
-            Quiz q = new Quiz(planRef, finalStageLabel, week, sourceName);
+            Quiz q = new Quiz(PlanService.ownerReference(users, userId), planRef, finalStageLabel, week, sourceName);
             for (FlashcardPdfRenderer.Card card : cards) {
                 q.addFlashcard(card.question(), card.answer());
             }
@@ -170,18 +175,20 @@ public class QuizService {
     }
 
     @Transactional(readOnly = true)
-    public List<QuizDtos.QuizSummary> list(UUID planId) {
-        List<Quiz> found = planId != null ? quizzes.findAllByPlanId(planId) : quizzes.findAllWithPlan();
+    public List<QuizDtos.QuizSummary> list(UUID planId, UUID userId) {
+        List<Quiz> found = planId != null
+                ? quizzes.findAllByOwnerAndPlan(userId, planId)
+                : quizzes.findAllByOwner(userId);
         Map<UUID, Long> counts = new HashMap<>();
-        for (Object[] row : quizzes.countFlashcardsPerQuiz()) {
+        for (Object[] row : quizzes.countFlashcardsPerQuiz(userId)) {
             counts.put((UUID) row[0], ((Number) row[1]).longValue());
         }
         return found.stream().map(q -> summary(q, counts.getOrDefault(q.getId(), 0L))).toList();
     }
 
     @Transactional(readOnly = true)
-    public QuizDtos.QuizDetails get(UUID id) {
-        Quiz quiz = quizzes.findWithFlashcards(id)
+    public QuizDtos.QuizDetails get(UUID id, UUID userId) {
+        Quiz quiz = quizzes.findWithFlashcards(id, userId)
                 .orElseThrow(() -> ApiException.notFound("Setul de flashcard-uri nu a fost găsit."));
         List<QuizDtos.FlashcardItem> items = quiz.getFlashcards().stream()
                 .sorted(Comparator.comparingInt(Flashcard::getOrderIndex))
@@ -191,8 +198,8 @@ public class QuizService {
     }
 
     @Transactional(readOnly = true)
-    public PdfFile pdf(UUID id) {
-        Quiz quiz = quizzes.findById(id)
+    public PdfFile pdf(UUID id, UUID userId) {
+        Quiz quiz = quizzes.findByIdAndOwner(id, userId)
                 .orElseThrow(() -> ApiException.notFound("Setul de flashcard-uri nu a fost găsit."));
         if (quiz.getPdf() == null) {
             throw ApiException.notFound("Setul nu are un PDF salvat.");
@@ -208,12 +215,16 @@ public class QuizService {
                 plan != null ? plan.getTitle() : null, count);
     }
 
-    /** Planul e recunoscut dupa ID-ul din metadatele PDF-ului sau, ca rezerva, dupa hash-ul fisierului. */
-    private Optional<LearningPlan> resolvePlan(String planIdFromMetadata, String sha256) {
+    /**
+     * Planul e recunoscut dupa ID-ul din metadatele PDF-ului sau, ca rezerva, dupa hash-ul fisierului.
+     * Se cauta doar printre planurile utilizatorului curent.
+     */
+    private Optional<LearningPlan> resolvePlan(String planIdFromMetadata, String sha256, UUID userId) {
         return tx.execute(status -> {
             if (planIdFromMetadata != null) {
                 try {
-                    Optional<LearningPlan> byId = plans.findById(UUID.fromString(planIdFromMetadata.trim()));
+                    Optional<LearningPlan> byId = plans.findByIdAndOwner(
+                            UUID.fromString(planIdFromMetadata.trim()), userId);
                     if (byId.isPresent()) {
                         return byId;
                     }
@@ -221,7 +232,7 @@ public class QuizService {
                     // metadate invalide -> incercam dupa hash
                 }
             }
-            return plans.findFirstByPdfSha256(sha256);
+            return plans.findFirstByPdfSha256AndOwner(sha256, userId);
         });
     }
 

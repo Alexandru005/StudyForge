@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { useTilt } from '../hooks/useTilt.js'
 import usePageTitle from '../hooks/usePageTitle.js'
+import { useAuth } from '../auth/context.js'
 import { Link } from '../router/Router.jsx'
 
 const ICON = {
@@ -63,6 +64,9 @@ function Tilt({ max, className, children }) {
 
 export default function Home() {
   usePageTitle('')
+  const { user } = useAuth()
+  // „Începe gratuit”: fără cont -> Log in / Register, apoi la /plan (încărcarea programei)
+  const start = user ? '/plan' : '/cont?next=%2Fplan'
 
   return (
     <div className="page-home">
@@ -82,7 +86,7 @@ export default function Home() {
               rutină, nu o corvoadă.
             </p>
             <div className="hero-cta">
-              <Link className="btn" to="/plan">
+              <Link className="btn" to={start}>
                 Începe gratuit
               </Link>
             </div>
@@ -133,7 +137,7 @@ export default function Home() {
         <Tilt max={6} className="cta">
           <h2>Gata să începi?</h2>
           <p>Încarcă programa materiei și primești planul de studiu, apoi exersezi cu flashcard-uri.</p>
-          <Link className="btn" to="/plan">
+          <Link className="btn" to={start}>
             Generează planul
           </Link>
         </Tilt>
