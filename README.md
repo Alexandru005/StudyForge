@@ -26,7 +26,6 @@
 
 ### Progress Page
 ![Progress Page](web_pics/progress.jpg)
-![Progress Page - Chart](web_pics/progress-chart.jpg)
 
 ### Friends & Leaderboard
 ![Friends Page](web_pics/friends.jpg)
