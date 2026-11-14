@@ -54,6 +54,12 @@ public final class GeminiSchemas {
                 List.of("weekLabel", "flashcards"));
     }
 
+    public static Map<String, Object> hint() {
+        return object(
+                props("hint", string("Indiciul, maximum 2 propoziții, fără să dezvăluie răspunsul")),
+                List.of("hint"));
+    }
+
     // ---- helpers ----
 
     private static Map<String, Object> props(Object... keyValues) {

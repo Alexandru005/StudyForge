@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.studyforge.backend.common.Dates;
 import com.studyforge.backend.plan.PlanContent;
+import com.studyforge.backend.quiz.HintContext;
 
 /**
  * Prompt-urile trimise la Gemini. Totul in romana, ca raspunsurile sa fie in romana.
@@ -121,6 +122,35 @@ public final class Prompts {
                 %s
                 === SFÂRȘITUL PLANULUI ===
                 """.formatted(weekNumber, count, weekNumber, weekNumber, planText);
+    }
+
+    /** Un indiciu pentru un flashcard, fara sa dezvaluie raspunsul. */
+    public static String hint(HintContext card, String previousHint) {
+        String avoid = previousHint == null || previousHint.isBlank()
+                ? ""
+                : "\nHint-ul dat anterior a fost: „" + previousHint.trim() + "”. Dă un hint DIFERIT, din alt unghi.\n";
+        return """
+                Materia: %s
+                Etapa: %s
+
+                Întrebarea flashcard-ului:
+                %s
+
+                Răspunsul corect (NU îl dezvălui):
+                %s
+                %s
+                Scrie UN SINGUR hint care ajută studentul să ajungă singur la răspuns.
+                Reguli:
+                - nu scrie răspunsul și nici cuvintele-cheie exacte din răspuns;
+                - poți da o idee de pornire, o asociere, o întrebare ajutătoare sau prima literă a unui termen;
+                - maximum 2 propoziții, ton prietenos;
+                - în limba română, cu diacritice.
+                """.formatted(
+                orDefault(card.subject(), "necunoscută"),
+                orDefault(card.learningStage(), "-"),
+                card.question(),
+                card.answer(),
+                avoid);
     }
 
     private static String bulletList(List<String> items) {
