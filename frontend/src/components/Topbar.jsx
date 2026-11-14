@@ -17,6 +17,7 @@ const USER_LINKS = [
   { to: '/flashcards', label: 'Flashcards' },
   { to: '/biblioteca', label: 'Bibliotecă' },
   { to: '/progres', label: 'Progres' },
+  { to: '/prieteni', label: 'Prieteni' },
 ]
 const AUTH_PAGES = ['/cont', '/login', '/register']
 

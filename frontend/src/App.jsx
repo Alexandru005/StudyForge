@@ -3,6 +3,7 @@ import { AuthProvider } from './auth/AuthProvider.jsx'
 import { useAuth } from './auth/context.js'
 import Topbar from './components/Topbar.jsx'
 import Flashcards from './pages/Flashcards.jsx'
+import Friends from './pages/Friends.jsx'
 import Home from './pages/Home.jsx'
 import Library from './pages/Library.jsx'
 import Login from './pages/Login.jsx'
@@ -11,6 +12,7 @@ import Plan from './pages/Plan.jsx'
 import Progress from './pages/Progress.jsx'
 import Register from './pages/Register.jsx'
 import Welcome from './pages/Welcome.jsx'
+import ProgressSync from './progress/ProgressSync.jsx'
 import { Router } from './router/Router.jsx'
 import { useRouter } from './router/context.js'
 import { ToastProvider } from './toast/ToastProvider.jsx'
@@ -28,6 +30,9 @@ import { ToastProvider } from './toast/ToastProvider.jsx'
  *   /flashcards/:id    un set salvat                          GET  /api/quizzes/{id}
  *   /biblioteca        toate planurile și seturile            GET  /api/library
  *   /progres           timp activ, scor și evoluție pe materie (date locale, per cont)
+ *   /prieteni          prieteni după email + clasament săptămânal cu like / dislike   /api/friends/**
+ *
+ * Progresul local (pe zile) se trimite la server de <ProgressSync />: PUT /api/progress/days
  */
 
 /** Trimite la altă adresă (fără să rămână în istoric). */
@@ -67,6 +72,8 @@ function Routes() {
       return needsUser(<Library />)
     case 'progres':
       return needsUser(<Progress />)
+    case 'prieteni':
+      return needsUser(<Friends />)
     default:
       return <NotFound />
   }
@@ -77,6 +84,7 @@ export default function App() {
     <Router>
       <ToastProvider>
         <AuthProvider>
+          <ProgressSync />
           <Topbar />
           <Routes />
         </AuthProvider>

@@ -20,7 +20,7 @@ import {
   weekStart,
   weeklySeries,
 } from '../progress/stats.js'
-import { GUEST_KEY, loadProgress } from '../progress/store.js'
+import { GUEST_KEY, PROGRESS_EVENT, loadProgress } from '../progress/store.js'
 import { Link } from '../router/Router.jsx'
 
 const MOOD_TEXT = {
@@ -39,7 +39,15 @@ export default function Progress() {
   const userKey = user?.id ?? GUEST_KEY
 
   const [today] = useState(() => new Date())
-  const progress = useMemo(() => loadProgress(userKey), [userKey])
+  // se reîncarcă și când progresul vine de pe server (după conectare / pe alt browser)
+  const [version, setVersion] = useState(0)
+  useEffect(() => {
+    const onChange = (e) => e.detail === userKey && setVersion((v) => v + 1)
+    window.addEventListener(PROGRESS_EVENT, onChange)
+    return () => window.removeEventListener(PROGRESS_EVENT, onChange)
+  }, [userKey])
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- version = semnal de reîncărcare
+  const progress = useMemo(() => loadProgress(userKey), [userKey, version])
   const [subjectKey, setSubjectKey] = useState(null) // null = toate materiile
   const [range, setRange] = useState('days') // 'days' | 'weeks'
 

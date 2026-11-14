@@ -16,6 +16,19 @@
  *   GET  /api/quizzes/{id} -> { quiz, flashcards }
  *   GET  /api/quizzes/{id}/pdf[?download=true]
  *   POST /api/flashcards/{id}/hint  { previousHint? } -> { hint }
+ *   GET  /api/progress        -> { data: { v, subjects, days } | null, updatedAt }
+ *   PUT  /api/progress        { v, subjects, days } -> { data, updatedAt }   (salvează progresul complet)
+ *   --- prieteni (vezi backend/FRIENDS_API.md) ---
+ *   GET    /api/friends/search?email=        -> { user, relation, requestId }
+ *   POST   /api/friends/requests  { email }  -> { relation: "REQUEST_SENT"|"FRIENDS", request }
+ *   GET    /api/friends/requests             -> { incoming: Request[], outgoing: Request[] }
+ *   POST   /api/friends/requests/{id}/accept -> Friend
+ *   DELETE /api/friends/requests/{id}        (refuză / anulează)
+ *   GET    /api/friends                      -> Friend[]
+ *   DELETE /api/friends/{friendId}
+ *   GET    /api/friends/leaderboard?week=0   -> { week, canGoBack, canGoForward, myRank, entries }
+ *   PUT    /api/friends/{friendId}/reaction?week=0  { type: "LIKE"|"DISLIKE" } -> LeaderboardEntry
+ *   DELETE /api/friends/{friendId}/reaction?week=0  -> LeaderboardEntry
  *
  * Erorile vin ca JSON (ProblemDetail) cu mesajul pentru utilizator în câmpul "detail".
  */
@@ -129,8 +142,20 @@ async function request(path, init = {}) {
 
 const json = async (path, init) => (await request(path, init)).json()
 
-const postJson = (path, data) =>
-  json(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+const sendJson = (method, path, data, init = {}) =>
+  json(path, {
+    ...init,
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: data === undefined ? undefined : JSON.stringify(data),
+  })
+
+const postJson = (path, data) => sendJson('POST', path, data)
+
+/** Cereri fără corp în răspuns (204). */
+const noContent = async (path, method = 'DELETE') => {
+  await request(path, { method })
+}
 
 /** { username: "Popescu Ion", email, gender: "MALE"|"FEMALE"|"OTHER", password } -> { token, tokenType, expiresAt, user } */
 export const register = (data) => postJson('/api/auth/register', data)
@@ -177,3 +202,36 @@ export async function fetchPdfAsFile(pdfUrl, fileName = 'plan.pdf') {
 /** Indiciu generat de AI pentru un card (fără să dea răspunsul). previousHint = cel de dinainte, pentru „Alt indiciu”. */
 export const getHint = (cardId, previousHint) =>
   postJson(`/api/flashcards/${encodeURIComponent(cardId)}/hint`, previousHint ? { previousHint } : {})
+
+// ------------------------------------------------------------------ progres (pentru clasament)
+
+/** Progresul complet salvat pe server (null dacă nu a fost salvat încă). */
+export const getProgress = () => json('/api/progress')
+
+/**
+ * Salvează progresul complet (același obiect ca în localStorage). Serverul calculează din el și
+ * totalurile pe zile pentru clasament. keepalive: cererea pleacă și dacă pagina se închide.
+ */
+export const saveProgress = (data, { keepalive = false } = {}) => sendJson('PUT', '/api/progress', data, { keepalive })
+
+// ------------------------------------------------------------------ prieteni
+
+const id = (v) => encodeURIComponent(v)
+
+/** Trimite o cerere de prietenie după email. relation = "REQUEST_SENT" sau "FRIENDS" (dacă îți trimisese deja una). */
+export const sendFriendRequest = (email) => postJson('/api/friends/requests', { email })
+export const getFriendRequests = () => json('/api/friends/requests')
+export const acceptFriendRequest = (requestId) => postJson(`/api/friends/requests/${id(requestId)}/accept`)
+/** Refuză o cerere primită sau anulează una trimisă. */
+export const deleteFriendRequest = (requestId) => noContent(`/api/friends/requests/${id(requestId)}`)
+export const getFriends = () => json('/api/friends')
+export const removeFriend = (friendId) => noContent(`/api/friends/${id(friendId)}`)
+
+/** Clasamentul săptămânii: week = 0 (aceasta), -1 (trecută) ... */
+export const getLeaderboard = (week = 0) => json(`/api/friends/leaderboard?week=${Number(week) || 0}`)
+
+/** type = "LIKE" | "DISLIKE"; întoarce rândul actualizat al prietenului. */
+export const reactToFriend = (friendId, type, week = 0) =>
+  sendJson('PUT', `/api/friends/${id(friendId)}/reaction?week=${Number(week) || 0}`, { type })
+export const removeReaction = (friendId, week = 0) =>
+  json(`/api/friends/${id(friendId)}/reaction?week=${Number(week) || 0}`, { method: 'DELETE' })

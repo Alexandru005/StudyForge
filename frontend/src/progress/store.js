@@ -1,6 +1,7 @@
 /*
- * Progresul de studiu se păstrează în browser, separat pentru fiecare cont (backend-ul nu are încă
- * endpoint-uri pentru statistici). Structura:
+ * Progresul de studiu se păstrează în browser, separat pentru fiecare cont, și se salvează și pe server
+ * (vezi sync.js): la conectare se îmbină cu cel de pe server, deci nu se pierde dacă schimbi browserul
+ * sau adresa ori se șterg datele din browser. Structura:
  *   { v: 1,
  *     subjects: { [subjectKey]: { title } },
  *     days: { 'YYYY-MM-DD': { [subjectKey]: { sec, ok, bad, weeks: { [nr]: { ok, bad } } } } } }
@@ -36,12 +37,50 @@ export function loadProgress(userKey) {
   return empty()
 }
 
+/** Evenimentul trimis la fiecare modificare a progresului (detail = userKey), pentru sincronizarea cu serverul. */
+export const PROGRESS_EVENT = 'studyforge:progress-changed'
+
 function save(userKey, data) {
   try {
     localStorage.setItem(storageKey(userKey), JSON.stringify(data))
   } catch {
     // spațiu de stocare indisponibil -> progresul acestei sesiuni se pierde
   }
+  window.dispatchEvent(new CustomEvent(PROGRESS_EVENT, { detail: userKey || GUEST_KEY }))
+}
+
+/** Înlocuiește progresul local (ex. după îmbinarea cu cel de pe server). */
+export function replaceProgress(userKey, data) {
+  save(userKey, data)
+}
+
+const num = (n) => (Number.isFinite(Number(n)) && Number(n) > 0 ? Number(n) : 0)
+
+/**
+ * Îmbină două progrese (local + server): pentru fiecare zi, materie și săptămână din plan păstrează
+ * valoarea mai mare, deci nimic nu se numără de două ori și nimic nu se pierde.
+ */
+export function mergeProgress(a, b) {
+  const out = { v: 1, subjects: { ...(b?.subjects ?? {}), ...(a?.subjects ?? {}) }, days: {} }
+  for (const src of [a, b]) {
+    for (const [day, entry] of Object.entries(src?.days ?? {})) {
+      for (const [key, x] of Object.entries(entry ?? {})) {
+        if (!x) continue
+        out.days[day] ??= {}
+        const cur = (out.days[day][key] ??= { sec: 0, ok: 0, bad: 0, weeks: {} })
+        cur.sec = Math.max(cur.sec, num(x.sec))
+        cur.ok = Math.max(cur.ok, num(x.ok))
+        cur.bad = Math.max(cur.bad, num(x.bad))
+        for (const [w, r] of Object.entries(x.weeks ?? {})) {
+          const cw = (cur.weeks[w] ??= { ok: 0, bad: 0 })
+          cw.ok = Math.max(cw.ok, num(r?.ok))
+          cw.bad = Math.max(cw.bad, num(r?.bad))
+        }
+        out.subjects[key] ??= { title: key }
+      }
+    }
+  }
+  return out
 }
 
 function bucket(data, day, subject) {
