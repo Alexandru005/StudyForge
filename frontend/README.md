@@ -54,3 +54,16 @@ src/
 - Nu există notițe de curs, text lipit sau „generează încă 5”: `POST /api/quizzes` primește doar PDF, săptămână și număr de carduri.
 - „Știut / de repetat” nu are endpoint (câmpul `mastered` există în baza de date, dar nu poate fi modificat din API),
   deci marcajele se păstrează în `localStorage`, per set.
+
+
+## Progres și indicii (flashcards)
+
+| Rută / element | Ce face | Backend |
+|---|---|---|
+| `/progres` | alegi materia (plan salvat sau fișier) și vezi timpul activ, scorul la flashcards, evoluția pe zile / săptămâni și mascota cu dispoziție (fericită / indiferentă / tristă) | `GET /api/library` (doar pentru lista de planuri) |
+| buton cu mascota pe fața cardului (sau tasta **H**) | norișor cu un indiciu; „Alt indiciu” cere altul | `POST /api/flashcards/{id}/hint` (`previousHint` opțional) |
+
+- Progresul se păstrează în `localStorage`, separat pentru fiecare cont (`src/progress/`); backend-ul nu are încă endpoint-uri de statistici.
+  Timpul se numără doar cât fila e vizibilă și ai făcut o acțiune în ultimul minut (pe pagina unui plan și în setul de carduri).
+  Scorul vine din bifa / X de pe carduri.
+- Dacă generarea indiciului eșuează (de ex. lipsește `GEMINI_API_KEY`), se afișează un indiciu local, derivat din răspuns.

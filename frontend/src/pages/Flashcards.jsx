@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { createQuiz, fetchPdfAsFile, getPlan, getQuiz, listPlans } from '../api.js'
+import { createQuiz, fetchPdfAsFile, getPlan, getQuiz, listPlans, getHint } from '../api.js'
 import {
   IconCheck,
   IconCross,
@@ -13,12 +13,15 @@ import {
   IconUpload,
   IconWarn,
 } from '../components/icons.jsx'
+import { useAuth } from '../auth/context.js'
 import PdfLinks from '../components/PdfLinks.jsx'
 import Spinner from '../components/Spinner.jsx'
 import StatusBanner from '../components/StatusBanner.jsx'
 import { countLabel, fileSlug } from '../format.js'
 import usePageTitle from '../hooks/usePageTitle.js'
 import { useTilt } from '../hooks/useTilt.js'
+import { GUEST_KEY, addAttempt, subjectOf } from '../progress/store.js'
+import { useStudyTimer } from '../progress/useStudyTimer.js'
 import { Link } from '../router/Router.jsx'
 import { useRouter } from '../router/context.js'
 import { useToast } from '../toast/context.js'
@@ -28,6 +31,18 @@ const MIN_COUNT = 5 // QuizService.MIN_COUNT
 const MAX_COUNT = 40 // QuizService.MAX_COUNT
 const MAX_WEEK = 52 // QuizService.MAX_WEEK_WITHOUT_PLAN
 const NO_CARDS = []
+
+/* Indiciul unui card: dacă backend-ul trimite `hint`, îl folosim; altfel îl derivăm din răspuns
+   (câte cuvinte are și cu ce începe), fără să-l dăm pe tot. */
+function hintFor(card) {
+  const given = typeof card.hint === 'string' ? card.hint.trim() : ''
+  if (given) return given
+  const words = String(card.answer ?? '').trim().split(/\s+/).filter(Boolean)
+  if (!words.length) return 'Gândește-te la ideea principală din întrebare.'
+  const first = words[0].replace(/[.,;:!?]+$/, '')
+  if (words.length === 1) return `Răspunsul e un singur cuvânt și începe cu „${first.slice(0, 2)}…”.`
+  return `Răspunsul are ${words.length} cuvinte și începe cu „${first}…”.`
+}
 
 /* Backend-ul nu are (încă) endpoint pentru "știut / de repetat", deci marcajele se păstrează în browser. */
 const marksKey = (quizId) => `studyforge:marks:${quizId}`
@@ -66,6 +81,8 @@ export default function Flashcards({ quizId }) {
   usePageTitle('Flashcards')
   const toast = useToast()
   const { location, navigate } = useRouter()
+  const { user, checking: authLoading } = useAuth()
+  const userKey = user?.id ?? GUEST_KEY
 
   // parametrii din Plan (?plan=...&week=...), citiți o singură dată
   const [initial] = useState(() => {
@@ -95,6 +112,8 @@ export default function Flashcards({ quizId }) {
   const [onlyIds, setOnlyIds] = useState(null) // Set de id-uri la reluarea celor greșite
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
+  const [hintOpenFor, setHintOpenFor] = useState(null) // id-ul cardului cu norișorul deschis
+  const [hints, setHints] = useState({}) // cardId -> { text, loading, local }
   const [instant, setInstant] = useState(false) // dezactivează animația de întoarcere
   const [slide, setSlide] = useState('') // clase pentru animația de alunecare
   const [finished, setFinished] = useState(false)
@@ -119,6 +138,15 @@ export default function Flashcards({ quizId }) {
   const okCount = view.filter((c) => marks[c.id] === 'ok').length
   const badCount = view.filter((c) => marks[c.id] === 'bad').length
   const hasDeck = Boolean(card) && !finished
+  const subject = set ? subjectOf(set.quiz) : null
+  // timpul activ petrecut la materia acestui set, pentru pagina Progres
+  useStudyTimer({ userKey, subjectKey: subject?.key, subjectTitle: subject?.title, enabled: hasDeck && !authLoading })
+  // norișorul se vede doar pe fața cardului pentru care a fost deschis (se închide singur la întoarcere / schimbare de card)
+  const hintOpen = Boolean(card) && hintOpenFor === card.id && !flipped
+  const hintState = card ? hints[card.id] : undefined
+  const hintText = hintState?.loading && !hintState.text ? 'Mă gândesc la un indiciu…' : (hintState?.text ?? (card ? hintFor(card) : ''))
+  // indiciile lungi primesc o literă mai mică, ca să încapă mereu în nor
+  const hintSize = hintText.length > 140 ? 'xs' : hintText.length > 90 ? 'sm' : 'md'
 
   const selectedPlan = plans?.find((p) => p.id === planId)
   const weekOptions = useMemo(() => {
@@ -312,6 +340,7 @@ export default function Flashcards({ quizId }) {
     const next = { ...marks, [card.id]: result }
     setMarks(next)
     writeMarks(set.quiz.id, next)
+    addAttempt(userKey, subject, set.quiz.weekNumber, result)
     // trecem la următorul card fără răspuns
     later(() => {
       const { view: v, index: i, go: goTo } = latest.current
@@ -339,6 +368,30 @@ export default function Flashcards({ quizId }) {
     swapTo(0, undefined, () => setOnlyIds(null))
   }
 
+  function toggleFlip() {
+    setFlipped((f) => !f)
+    setHintOpenFor(null) // norișorul nu reapare la întoarcerea cardului
+  }
+
+  // Indiciul vine de la backend (AI). Dacă cererea eșuează, folosim indiciul local derivat din card.
+  async function loadHint(target, again = false) {
+    const previous = again ? hints[target.id]?.text : undefined
+    setHints((h) => ({ ...h, [target.id]: { text: h[target.id]?.text ?? '', loading: true } }))
+    try {
+      const { hint } = await getHint(target.id, previous)
+      setHints((h) => ({ ...h, [target.id]: { text: hint, loading: false } }))
+    } catch {
+      setHints((h) => ({ ...h, [target.id]: { text: hintFor(target), loading: false, local: true } }))
+    }
+  }
+
+  function toggleHint() {
+    if (!card) return
+    const opening = hintOpenFor !== card.id
+    setHintOpenFor(opening ? card.id : null)
+    if (opening && !hints[card.id]) loadHint(card)
+  }
+
   function showAllCards() {
     swapTo(0, undefined, () => setOnlyIds(null))
   }
@@ -353,9 +406,11 @@ export default function Flashcards({ quizId }) {
       if (e.key === ' ' || e.key === 'Enter') {
         if (el?.closest('button, a') && el !== cardRef.current) return
         e.preventDefault()
-        setFlipped((f) => !f)
+        toggleFlip()
       } else if (e.key === 'ArrowRight') go(index + 1, 'next')
       else if (e.key === 'ArrowLeft') go(index - 1, 'prev')
+      else if ((e.key === 'h' || e.key === 'H') && !flipped) toggleHint()
+      else if (e.key === 'Escape' && hintOpen) setHintOpenFor(null)
       else if (e.key === '1' && flipped) mark('ok')
       else if (e.key === '2' && flipped) mark('bad')
     }
@@ -680,7 +735,7 @@ export default function Flashcards({ quizId }) {
                             onClick={(e) => {
                               if (e.target instanceof Element && e.target.closest('button')) return
                               if (window.getSelection()?.toString()) return // nu întoarce când se selectează text
-                              setFlipped((f) => !f)
+                              toggleFlip()
                             }}
                           >
                             {/* FAȚA: întrebarea */}
@@ -692,10 +747,66 @@ export default function Flashcards({ quizId }) {
                                 </span>
                               </div>
                               <p className="q">{card.question}</p>
-                              <span className="fc-hint">
-                                <IconFlip />
-                                Apasă pe card pentru răspuns
-                              </span>
+                              <div className="fc-bottom">
+                                <span className="fc-hint">
+                                  <IconFlip />
+                                  Apasă pe card pentru răspuns
+                                </span>
+                                <div className="hint-wrap">
+                                  {hintOpen && (
+                                    <div
+                                      className="hint-cloud"
+                                      id="hint-cloud"
+                                      data-size={hintSize}
+                                      role="status"
+                                      title="Apasă ca să închizi"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        setHintOpenFor(null)
+                                      }}
+                                    >
+                                      <svg className="hint-top" viewBox="0 28 488 187" aria-hidden="true">
+                                        <path d="M0 215 C0 190 30 150 72 145 Q82 143 82 138 C82 80 115 34 170 32 C215 30 258 50 270 82 Q280 80 305 78 C345 74 385 105 388 150 Q392 172 405 174 C450 176 488 190 488 215Z" />
+                                      </svg>
+                                      <div className="hint-body">
+                                        <div className="hint-inner">
+                                          <span className="hint-lbl">Indiciu</span>
+                                          <p>{hintText}</p>
+                                          {hintState && !hintState.local && (
+                                            <button
+                                              className="hint-more"
+                                              type="button"
+                                              disabled={hintState.loading}
+                                              onClick={(e) => {
+                                                e.stopPropagation()
+                                                loadHint(card, true)
+                                              }}
+                                            >
+                                              {hintState.loading ? 'Se încarcă…' : 'Alt indiciu'}
+                                            </button>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <i className="hc d1" aria-hidden="true" />
+                                      <i className="hc d2" aria-hidden="true" />
+                                    </div>
+                                  )}
+                                  <button
+                                    className="hint-btn"
+                                    type="button"
+                                    aria-expanded={hintOpen}
+                                    aria-controls={hintOpen ? 'hint-cloud' : undefined}
+                                    aria-label="Arată un indiciu"
+                                    title="Indiciu (H)"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      toggleHint()
+                                    }}
+                                  >
+                                    <img src="/hint-mascot.svg" alt="" width="44" height="44" />
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                             {/* SPATELE: răspuns + bifă / X */}
                             <div className="face back" inert={!flipped}>

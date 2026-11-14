@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPlan, getPlan } from '../api.js'
 import { IconSave, IconUpload } from '../components/icons.jsx'
+import { useAuth } from '../auth/context.js'
 import PlanView from '../components/PlanView.jsx'
 import Spinner from '../components/Spinner.jsx'
 import StatusBanner from '../components/StatusBanner.jsx'
 import usePageTitle from '../hooks/usePageTitle.js'
+import { GUEST_KEY, subjectOf } from '../progress/store.js'
+import { useStudyTimer } from '../progress/useStudyTimer.js'
 import { useRouter } from '../router/context.js'
 import { useToast } from '../toast/context.js'
 
@@ -55,6 +58,16 @@ export default function Plan({ planId }) {
   }, [loadedId])
 
   const shown = planId && loadedId === planId ? details : null
+
+  // timpul activ cât citești un plan se adaugă la materia lui (pagina Progres)
+  const { user, checking: authLoading } = useAuth()
+  const planSubject = shown ? subjectOf({ planId: shown.plan.id, planTitle: shown.plan.title }) : null
+  useStudyTimer({
+    userKey: user?.id ?? GUEST_KEY,
+    subjectKey: planSubject?.key,
+    subjectTitle: planSubject?.title,
+    enabled: Boolean(shown) && !authLoading,
+  })
   const failed = planId && loadErr?.id === planId ? loadErr.message : ''
   const loading = Boolean(planId) && !shown && !failed
 

@@ -8,6 +8,7 @@ import Library from './pages/Library.jsx'
 import Login from './pages/Login.jsx'
 import NotFound from './pages/NotFound.jsx'
 import Plan from './pages/Plan.jsx'
+import Progress from './pages/Progress.jsx'
 import Register from './pages/Register.jsx'
 import Welcome from './pages/Welcome.jsx'
 import { Router } from './router/Router.jsx'
@@ -26,6 +27,7 @@ import { ToastProvider } from './toast/ToastProvider.jsx'
  *   /flashcards        generare set de carduri                POST /api/quizzes
  *   /flashcards/:id    un set salvat                          GET  /api/quizzes/{id}
  *   /biblioteca        toate planurile și seturile            GET  /api/library
+ *   /progres           timp activ, scor și evoluție pe materie (date locale, per cont)
  */
 
 /** Trimite la altă adresă (fără să rămână în istoric). */
@@ -63,6 +65,8 @@ function Routes() {
       return needsUser(<Flashcards quizId={id} />)
     case 'biblioteca':
       return needsUser(<Library />)
+    case 'progres':
+      return needsUser(<Progress />)
     default:
       return <NotFound />
   }

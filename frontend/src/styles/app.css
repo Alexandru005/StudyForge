@@ -109,6 +109,37 @@
      font-size:32px;line-height:1.2;letter-spacing:-0.015em;text-wrap:balance}
   .page-app .fc-hint{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--p6)}
 
+  /* ---------- hint: mascota + norișor alb cu text albastru ---------- */
+  .page-app .hint-wrap{position:relative;margin-left:auto}
+  .page-app .hint-btn{width:60px;height:60px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;
+     border:2px solid rgba(255,255,255,.55);background:#f7d6dc;box-shadow:0 6px 20px rgba(0,0,0,.35);transition:transform .15s,background .2s,box-shadow .2s}
+  .page-app .hint-btn img{width:44px;height:44px;display:block;pointer-events:none}
+  .page-app .hint-btn:hover{transform:translateY(-2px) scale(1.05);background:#fbe6ea}
+  .page-app .hint-btn:active{transform:scale(.94)}
+  .page-app .hint-btn[aria-expanded="true"]{background:#fff;box-shadow:0 0 28px rgba(247,214,220,.55)}
+  .page-app .hint-cloud{position:absolute;right:-6px;bottom:calc(100% + 56px);z-index:3;box-sizing:border-box;width:min(380px,calc(100vw - 48px));
+     container-type:inline-size;text-align:center;color:#2457c5;cursor:pointer;
+     filter:drop-shadow(0 16px 24px rgba(0,0,0,.4));transform-origin:90% 100%;animation:hint-pop .38s cubic-bezier(.2,1.3,.4,1)}
+  .page-app .hint-cloud p,.page-app .hint-lbl{position:relative;z-index:1}
+  .page-app .hint-cloud p{margin:4px 0 0;font-size:clamp(12px,3.8cqw,16px);line-height:1.35;font-weight:500;text-wrap:pretty;overflow-wrap:anywhere}
+  .page-app .hint-cloud[data-size="sm"] p{font-size:clamp(12px,3.4cqw,14.5px)}
+  .page-app .hint-cloud[data-size="xs"] p{font-size:clamp(11.5px,3.1cqw,13px);line-height:1.3}
+  .page-app .hint-lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5b86e0}
+  .page-app .hc{position:absolute;display:block;background:#fff;border-radius:50%}
+  /* norul = capul cu bule (SVG, proporții fixe) + corpul care crește după text; mărimile merg cu lățimea norului (cqw) */
+  .page-app .hint-top{display:block;width:100%;height:auto}
+  .page-app .hint-top path{fill:#fff}
+  .page-app .hint-body{display:flow-root;background:#fff;min-height:16cqw;padding:0 11cqw 7cqw;border-radius:0 0 13cqw 13cqw / 0 0 17cqw 17cqw}
+  .page-app .hint-inner{position:relative;margin-top:-6cqw;display:flex;flex-direction:column;align-items:center}
+  .page-app .hc.d1{right:36px;bottom:-30px;width:20px;height:20px}
+  .page-app .hc.d2{right:24px;bottom:-50px;width:11px;height:11px}
+  .page-app .hint-more{position:relative;z-index:1;margin-top:8px;padding:6px 14px;border-radius:999px;cursor:pointer;font:600 13px Inter,system-ui,sans-serif;
+     color:#2457c5;background:#e8effd;border:1px solid #b9ccf3;transition:background .2s}
+  .page-app .hint-more:hover:not(:disabled){background:#d6e3fb}
+  .page-app .hint-more:disabled{opacity:.6;cursor:progress}
+  @keyframes hint-pop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+  @media (prefers-reduced-motion:reduce){.page-app .hint-cloud{animation:none}}
+
   .page-app .back-body{flex:1;margin:22px 0 18px}
   .page-app .lbl-sm{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--p6)}
   .page-app .answer{margin:6px 0 0;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;line-height:1.3}

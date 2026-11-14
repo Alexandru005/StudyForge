@@ -15,6 +15,7 @@
  *   GET  /api/quizzes[?planId=]           -> QuizSummary[]
  *   GET  /api/quizzes/{id} -> { quiz, flashcards }
  *   GET  /api/quizzes/{id}/pdf[?download=true]
+ *   POST /api/flashcards/{id}/hint  { previousHint? } -> { hint }
  *
  * Erorile vin ca JSON (ProblemDetail) cu mesajul pentru utilizator în câmpul "detail".
  */
@@ -172,3 +173,7 @@ export async function fetchPdfAsFile(pdfUrl, fileName = 'plan.pdf') {
   const blob = await (await request(pdfUrl)).blob()
   return new File([blob], fileName, { type: 'application/pdf' })
 }
+
+/** Indiciu generat de AI pentru un card (fără să dea răspunsul). previousHint = cel de dinainte, pentru „Alt indiciu”. */
+export const getHint = (cardId, previousHint) =>
+  postJson(`/api/flashcards/${encodeURIComponent(cardId)}/hint`, previousHint ? { previousHint } : {})

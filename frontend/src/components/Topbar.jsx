@@ -16,6 +16,7 @@ const USER_LINKS = [
   { to: '/plan', label: 'Plan' },
   { to: '/flashcards', label: 'Flashcards' },
   { to: '/biblioteca', label: 'Bibliotecă' },
+  { to: '/progres', label: 'Progres' },
 ]
 const AUTH_PAGES = ['/cont', '/login', '/register']
 

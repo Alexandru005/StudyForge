@@ -1,0 +1,116 @@
+/* Pagina Progres: alegere materie, mascotă cu dispoziție, statistici și grafic (paleta Holst, sticlă). */
+
+.page-app .pg { padding-bottom: 96px; }
+.page-app .pg-block { margin-top: 36px; }
+.page-app .pg-block > h2,
+.page-app .pg-chart-head h2 { margin: 0 0 16px; font-size: 22px; }
+.page-app .pg-note { margin: 0 0 8px; padding: 12px 16px; border-radius: 12px; font-size: 14.5px; color: var(--p7);
+  background: rgba(247, 214, 220, 0.07); border: 1px solid var(--glass-line); }
+.page-app .pg-hint { margin: 14px 0 0; color: var(--p6); font-size: 15px; line-height: 1.5; }
+.page-app .sub { color: var(--p6); font-size: 13.5px; }
+.page-app .sub .ok { color: var(--ok); } .page-app .sub .bad { color: var(--bad); }
+
+/* ----- alegerea materiei ----- */
+.page-app .pg-subjects { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.page-app .subj { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 16px 18px; cursor: pointer;
+  border-radius: 16px; background: rgba(247, 214, 220, 0.05); border: 1.5px solid var(--glass-line);
+  transition: background 0.2s, border-color 0.2s, transform 0.15s; min-width: 0; }
+.page-app .subj:hover { background: rgba(247, 214, 220, 0.1); border-color: rgba(224, 122, 148, 0.45); transform: translateY(-2px); }
+.page-app .subj input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.page-app .subj:has(input:focus-visible) { outline: 3px solid var(--p6); outline-offset: 3px; }
+.page-app .subj.on { background: linear-gradient(150deg, rgba(142, 43, 68, 0.55), rgba(109, 29, 50, 0.45)); border-color: var(--p6);
+  box-shadow: 0 0 0 1px rgba(224, 122, 148, 0.35), 0 12px 34px rgba(0, 0, 0, 0.35); }
+.page-app .subj-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 17px; overflow-wrap: anywhere; }
+.page-app .subj-meta { color: var(--p6); font-size: 13.5px; }
+.page-app .subj.on .subj-title::after { content: '✓'; margin-left: 8px; color: var(--p7); font-size: 14px; }
+
+/* ----- mascotă + statistici ----- */
+.page-app .pg-hero { margin-top: 28px; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 28px; padding: 32px; align-items: center; }
+.page-app .pg-mascot { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+.page-app .pg-mood-text { margin: 12px 0 0; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 18px; line-height: 1.3; text-wrap: balance; }
+.page-app .pg-mood-rule { margin: 0; color: var(--p6); font-size: 12.5px; }
+.page-app .pg-stats h2 { margin: 0 0 18px; font-size: 26px; line-height: 1.2; overflow-wrap: anywhere; }
+.page-app .pg-scope-lbl { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--p6); margin-bottom: 4px; }
+.page-app .pg-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.page-app .tile { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; border-radius: 16px;
+  background: rgba(23, 6, 10, 0.4); border: 1px solid var(--glass-line); min-width: 0; }
+.page-app .tile b, .page-app .period b { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 34px; letter-spacing: -0.02em; line-height: 1.1; }
+.page-app .meter { display: block; height: 8px; border-radius: 999px; background: rgba(247, 214, 220, 0.12); overflow: hidden; }
+.page-app .meter i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--p4), var(--p6)); transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+/* ----- azi / săptămâna ----- */
+.page-app .pg-periods { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.page-app .period { display: flex; flex-direction: column; gap: 6px; padding: 20px 22px; }
+.page-app .period b.up { color: var(--ok); } .page-app .period b.down { color: var(--bad); }
+
+/* ----- grafic ----- */
+.page-app .pg-chart-card { padding: 24px 24px 18px; }
+.page-app .pg-chart-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.page-app .pg-chart-head h2 { margin: 0; }
+.page-app .pg-tabs { display: inline-grid; grid-template-columns: auto auto; }
+.page-app .pg-tabs .tab { padding: 0 16px; }
+.page-app .pg-tabs .tab[aria-pressed='true'] { background: var(--p2); color: var(--p7); }
+.page-app .pg-chart { margin: 0; }
+.page-app .pg-chart-scroll { overflow-x: auto; scrollbar-width: thin; }
+.page-app .pg-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.page-app .pg-chart .pg-grid { stroke: rgba(247, 214, 220, 0.12); stroke-width: 1; stroke-dasharray: 3 5; }
+.page-app .pg-chart .pg-axis { fill: var(--p6); font: 500 13px Inter, system-ui, sans-serif; }
+.page-app .pg-chart .pg-axis.score { fill: var(--ok); }
+.page-app .pg-chart .pg-bar { fill: var(--p5); opacity: 0.9; transition: opacity 0.2s; }
+.page-app .pg-chart .pg-bar:hover { opacity: 1; fill: var(--p6); }
+.page-app .pg-chart .pg-line { fill: none; stroke: var(--ok); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.page-app .pg-chart .pg-pt { fill: var(--p1); stroke: var(--ok); stroke-width: 2.5; }
+.page-app .pg-legend { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 10px; color: var(--p6); font-size: 13.5px; }
+.page-app .pg-legend i { display: inline-block; vertical-align: middle; margin-right: 8px; }
+.page-app .k-bar { width: 14px; height: 14px; border-radius: 4px; background: var(--p5); }
+.page-app .k-line { width: 20px; height: 3px; border-radius: 2px; background: var(--ok); }
+
+/* ----- pe săptămânile din plan ----- */
+.page-app .pg-weeks { padding: 24px; }
+.page-app .pg-weeks h2 { margin: 0 0 16px; }
+.page-app .pg-weeks ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.page-app .pg-weeks li { display: grid; grid-template-columns: 130px minmax(0, 1fr) 150px; gap: 16px; align-items: center; }
+.page-app .pg-weeks .wk { font-weight: 600; }
+.page-app .pg-weeks .val { text-align: right; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 18px; }
+.page-app .pg-weeks .val small { font: 400 13px Inter, system-ui, sans-serif; color: var(--p6); }
+
+/* ----- mascota cu dispoziție ----- */
+.mood { position: relative; flex: none; }
+.mood-img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 3px solid rgba(247, 214, 220, 0.55);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 0 8px rgba(247, 214, 220, 0.08); transform-origin: 50% 90%; }
+.mood-fx { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.mood-happy .mood-img { animation: mood-bounce 1.1s ease-in-out infinite; }
+.mood-happy .spark { fill: #ffe9a8; transform-box: fill-box; transform-origin: center; animation: mood-twinkle 1.6s ease-in-out infinite; }
+.mood-happy .s2 { animation-delay: 0.4s; } .mood-happy .s3 { animation-delay: 0.8s; } .mood-happy .s4 { animation-delay: 1.2s; }
+.mood-neutral .mood-img { animation: mood-float 3.6s ease-in-out infinite; }
+.mood-neutral .dot { fill: var(--p7); opacity: 0.85; }
+.mood-neutral .d2 { opacity: 0.7; } .mood-neutral .d3 { opacity: 0.55; }
+.mood-sad .mood-img { filter: saturate(0.5) brightness(0.88); transform: scale(1, 0.95) rotate(-3deg); animation: mood-sag 4s ease-in-out infinite; }
+.mood-sad .cloud { fill: #8d93a8; }
+.mood-sad .drop { fill: #7fb2ff; animation: mood-rain 1.2s linear infinite; }
+.mood-sad .dr2 { animation-delay: 0.4s; } .mood-sad .dr3 { animation-delay: 0.8s; }
+.mood-sad .tear { fill: #9cc7ff; opacity: 0; animation: mood-tear 2.4s ease-in infinite; }
+@keyframes mood-bounce { 0%, 100% { transform: translateY(0) scale(1, 1); } 40% { transform: translateY(-16px) scale(0.98, 1.03); } 70% { transform: translateY(0) scale(1.03, 0.96); } }
+@keyframes mood-twinkle { 0%, 100% { opacity: 0.25; transform: scale(0.6); } 50% { opacity: 1; transform: scale(1.15); } }
+@keyframes mood-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes mood-sag { 0%, 100% { transform: scale(1, 0.95) rotate(-3deg); } 50% { transform: scale(1, 0.94) rotate(-4deg) translateY(2px); } }
+@keyframes mood-rain { 0% { transform: translateY(-4px); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(26px); opacity: 0; } }
+@keyframes mood-tear { 0%, 25% { transform: translateY(0); opacity: 0; } 35% { opacity: 0.95; } 100% { transform: translateY(46px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .mood *, .mood-img { animation: none !important; }
+  .mood-sad .tear { opacity: 0.9; }
+}
+
+@media (max-width: 960px) {
+  .page-app .pg-hero { grid-template-columns: 1fr; padding: 24px; }
+  .page-app .pg-periods { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .page-app .pg-tiles { grid-template-columns: 1fr; }
+  .page-app .tile b, .page-app .period b { font-size: 30px; }
+  .page-app .pg-weeks li { grid-template-columns: 1fr auto; }
+  .page-app .pg-weeks .meter { grid-column: 1 / -1; grid-row: 2; }
+  .page-app .pg-chart-card { padding: 18px 12px 14px; }
+  .page-app .pg-chart svg { min-width: 560px; }
+  .page-app .pg-subjects { grid-template-columns: 1fr; }
+}
