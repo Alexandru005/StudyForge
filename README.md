@@ -1,4 +1,4 @@
-# 🔥 StudyForge
+# 😎 StudyForge
 
 > *Forge every exam. An AI-powered study platform that turns your syllabus into a weekly plan, flashcards and measurable progress.*
 
