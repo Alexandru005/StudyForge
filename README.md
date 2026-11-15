@@ -1,4 +1,4 @@
-# 😎 StudyForge
+# 📖 StudyForge
 
 > *Forge every exam. An AI-powered study platform that turns your syllabus into a weekly plan, flashcards and measurable progress.*
 
@@ -83,10 +83,13 @@ A high-level overview of the project's architecture:
 │   │   ├── 📂 router                       # Custom client-side router
 │   │   ├── 📂 styles                       # Hand-written CSS
 │   │   └── 📂 toast                        # Notification system
+│   ├── 📄 Dockerfile                       # Frontend container image (multi-stage: Vite build + nginx)
+│   ├── 📄 nginx.conf                       # nginx config: serves the app & proxies /api to the backend
+│   ├── 📄 .dockerignore                    # Files excluded from the frontend image build
 │   ├── 📄 package.json                     # Frontend dependencies and scripts
-│   └── 📄 vite.config.js                   # Vite configuration (proxies /api to the backend)
+│   └── 📄 vite.config.js                   # Vite configuration (proxies /api to the backend in dev mode)
 ├── 📂 web_pics                             # Images used for documentation
-├── 📄 docker-compose.yml                   # Database + backend container setup
+├── 📄 docker-compose.yml                   # Database + backend + frontend container setup
 └── 📄 .env.example                         # Environment variables template
 ```
 
@@ -109,6 +112,7 @@ A high-level overview of the project's architecture:
 ### Database & DevOps
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)
 
 ### Frontend
 ![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
@@ -130,9 +134,8 @@ A high-level overview of the project's architecture:
 ### Prerequisites
 
 - [Docker](https://www.docker.com/) (running)
-- Java 25 (only if you run the backend outside Docker)
-- Node.js and npm
 - A [Google Gemini API key](https://aistudio.google.com/apikey)
+- *Optional, only for development outside Docker:* Java 25 (backend) and Node.js with npm (frontend)
 
 ### Run the app
 
@@ -148,11 +151,35 @@ A high-level overview of the project's architecture:
    ```
    Then fill in the values: database name, user and password, your `GEMINI_API_KEY`, and a `JWT_SECRET` of at least 32 characters.
 
-3. **Start the database and the backend**
+3. **Start the whole application** (database, backend and frontend)
    ```bash
    docker compose up -d --build
    ```
-   This starts PostgreSQL (port `5432`) and the Spring Boot API (port `8080`). Flyway creates the tables automatically.
+   This starts three containers:
+   - **PostgreSQL** on port `5432` (Flyway creates the tables automatically)
+   - **Spring Boot API** on port `8080`
+   - **Frontend** (React build served by nginx) on port `5173`
+
+   The frontend container also proxies every `/api` request to the backend, so no extra configuration is needed.
+
+4. **Open the app** at http://localhost:5173
+
+Now you're good to go: upload your syllabus and start forging your exams! 🔥
+
+To stop the application:
+```bash
+docker compose down       # stops and removes the containers, keeps the database data
+docker compose down -v    # also deletes the database data (fresh start)
+```
+
+### Development mode (optional)
+
+The Docker frontend serves a production build, so every code change requires rebuilding it (`docker compose up -d --build frontend`). For hot reload while developing, run only the database (and optionally the backend) in Docker and start the frontend with Vite:
+
+1. **Start the database and the backend**
+   ```bash
+   docker compose up -d postgres backend
+   ```
 
    *Prefer running the backend from your IDE?* Start only the database with `docker compose up -d postgres`, then run `BackendApplication` (`backend/src/main/java/com/studyforge/backend`), or from the terminal:
    ```bash
@@ -161,16 +188,14 @@ A high-level overview of the project's architecture:
    ```
    Make sure the variables from `.env` are available to the backend in this case.
 
-4. **Start the frontend** (in a new terminal)
+2. **Start the frontend** (in a new terminal)
    ```bash
    cd frontend
    npm install
    npm run dev
    ```
 
-5. **Open the app** at http://localhost:5173
-
-Now you're good to go: upload your syllabus and start forging your exams! 🔥
+3. **Open the app** at http://localhost:5173 (if the Docker frontend is running, stop it first with `docker compose stop frontend`, since both use port `5173`)
 
 ---
 
